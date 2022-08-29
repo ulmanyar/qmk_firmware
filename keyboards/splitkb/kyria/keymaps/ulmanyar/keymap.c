@@ -25,6 +25,31 @@ enum layers {
     _ADJUST,
 };
 
+// Encoder states
+enum left_encoder_states {
+    _RE_MEDIA,
+    _RE_WINDOW,
+    _NUMBER_OF_RE_STATES,
+} left_encoder_state;
+
+enum custom_keycodes {
+    L_RE_ST = SAFE_RANGE,
+};
+
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+    case L_RE_ST:
+        if (record->event.pressed) {
+            // when keycode QMKBEST is pressed
+            left_encoder_state = (left_encoder_state + 1) % _NUMBER_OF_RE_STATES;
+        } else {
+            // when keycode QMKBEST is released
+        }
+        break;
+    }
+    return true;
+};
+
 // Tap Dance declarations
 enum {
     TD_ARNG_QUOT,
@@ -76,7 +101,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      KC_TAB  , SE_Q ,  SE_W   ,  SE_E  ,   SE_R ,   SE_T ,                                        SE_Y,   SE_U ,  SE_I ,   SE_O ,  SE_P , AA_QUOT,
      CTL_ESC , SE_A ,  SE_S   ,  SE_D  ,   SE_F ,   SE_G ,                                        SE_H,   SE_J ,  SE_K ,   SE_L ,SE_ODIA,CTL_ADIA,
      KC_LSFT , SE_Z ,  SE_X   ,  SE_C  ,   SE_V ,   SE_B , KC_LBRC,KC_CAPS,     FKEYS  , KC_RBRC, SE_N,   SE_M ,SE_COMM, SE_DOT ,SE_MINS, KC_RSFT,
-                                ADJUST , KC_LGUI, ALT_ENT, KC_SPC , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT, KC_APP
+                                // ADJUST , KC_LGUI, ALT_ENT, KC_SPC , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT, KC_APP
+                                L_RE_ST, KC_LGUI, ALT_ENT, KC_SPC , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT, KC_APP
     ),
 
 /*
@@ -282,9 +308,27 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     if (index == 0) {
         // Volume control
         if (clockwise) {
-            tap_code(KC_VOLU);
+            switch (left_encoder_state)
+            {
+            case _RE_MEDIA:
+                tap_code(KC_VOLU);
+                break;
+            case _RE_WINDOW:
+                tap_code16(C(KC_TAB));
+            default:
+                break;
+            }
         } else {
-            tap_code(KC_VOLD);
+            switch (left_encoder_state)
+            {
+            case _RE_MEDIA:
+                tap_code(KC_VOLD);
+                break;
+            case _RE_WINDOW:
+                tap_code16(S(C(KC_TAB)));
+            default:
+                break;
+            }
         }
     } else if (index == 1) {
         // Page up/Page down
