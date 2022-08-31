@@ -28,24 +28,27 @@ enum layers {
 // Encoder states
 enum left_encoder_states {
     _RE_MEDIA,
-    _RE_WINDOW,
+    _RE_TABSWITCH,
     _NUMBER_OF_RE_STATES,
 } left_encoder_state;
 
 enum custom_keycodes {
     L_RE_ST = SAFE_RANGE,
+    L_RE_FN,
 };
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-    case L_RE_ST:
-        if (record->event.pressed) {
-            // when keycode QMKBEST is pressed
-            left_encoder_state = (left_encoder_state + 1) % _NUMBER_OF_RE_STATES;
-        } else {
-            // when keycode QMKBEST is released
-        }
-        break;
+        case L_RE_ST:
+            if (record->event.pressed) {
+                // when keycode L_RE_ST is pressed
+                left_encoder_state = (left_encoder_state + 1) % _NUMBER_OF_RE_STATES;
+            } else {
+                // when keycode L_RE_ST is released
+            }
+            break;
+        default:
+            break;
     }
     return true;
 };
@@ -53,12 +56,35 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 // Tap Dance declarations
 enum {
     TD_ARNG_QUOT,
+    TD_LREM_LREF,
 };
+
+void dance_left_re(qk_tap_dance_state_t *state, void *user_data) {
+    if (state->count == 1) {
+        left_encoder_state = (left_encoder_state + 1) % _NUMBER_OF_RE_STATES;
+    } else {
+        switch (left_encoder_state) {
+            case _RE_MEDIA:
+                // Mute
+                tap_code(KC_MUTE);
+                break;
+            case _RE_TABSWITCH:
+                // Close tab
+                tap_code16(C(SE_W));
+                break;
+            default:
+                break;
+        }
+    }
+    reset_tap_dance(state);
+}
 
 // Tap Dance definitions
 qk_tap_dance_action_t tap_dance_actions[] = {
     // Tap once for Å, twice for Caps Lock
     [TD_ARNG_QUOT] = ACTION_TAP_DANCE_DOUBLE(SE_ARNG, SE_QUOT),
+    // Tap once for function switching, twice for function execution
+    [TD_LREM_LREF] = ACTION_TAP_DANCE_FN(dance_left_re),
 };
 
 // Aliases for readability
@@ -71,10 +97,22 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 #define ADJUST   MO(_ADJUST)
 
 #define AA_QUOT  TD(TD_ARNG_QUOT)
+#define L_RE_TAP TD(TD_LREM_LREF)
 #define CTL_ESC  MT(MOD_LCTL, KC_ESC)
 #define CTL_ADIA MT(MOD_RCTL, SE_ADIA)
 #define CTL_MINS MT(MOD_RCTL, KC_MINUS)
 #define ALT_ENT  MT(MOD_LALT, KC_ENT)
+
+// Custom tapping terms
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case L_RE_TAP: // TODO: Catch all REs
+            // Rotary encoders are slower to double-tap
+            return TAPPING_TERM + 200;
+        default:
+            return TAPPING_TERM;
+    }
+}
 
 
 // Note: LAlt/Enter (ALT_ENT) is not the same thing as the keyboard shortcut Alt+Enter.
@@ -102,7 +140,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      CTL_ESC , SE_A ,  SE_S   ,  SE_D  ,   SE_F ,   SE_G ,                                        SE_H,   SE_J ,  SE_K ,   SE_L ,SE_ODIA,CTL_ADIA,
      KC_LSFT , SE_Z ,  SE_X   ,  SE_C  ,   SE_V ,   SE_B , KC_LBRC,KC_CAPS,     FKEYS  , KC_RBRC, SE_N,   SE_M ,SE_COMM, SE_DOT ,SE_MINS, KC_RSFT,
                                 // ADJUST , KC_LGUI, ALT_ENT, KC_SPC , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT, KC_APP
-                                L_RE_ST, KC_LGUI, ALT_ENT, KC_SPC , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT, KC_APP
+                               L_RE_TAP, KC_LGUI, ALT_ENT, KC_SPC , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT, KC_APP
     ),
 
 /*
@@ -241,16 +279,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_180; }
 
 bool oled_task_user(void) {
-    if (is_keyboard_left()) {
-        // QMK Logo and version information
-        // clang-format off
-        static const char PROGMEM qmk_logo[] = {
-            0x80,0x81,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8a,0x8b,0x8c,0x8d,0x8e,0x8f,0x90,0x91,0x92,0x93,0x94,
-            0xa0,0xa1,0xa2,0xa3,0xa4,0xa5,0xa6,0xa7,0xa8,0xa9,0xaa,0xab,0xac,0xad,0xae,0xaf,0xb0,0xb1,0xb2,0xb3,0xb4,
-            0xc0,0xc1,0xc2,0xc3,0xc4,0xc5,0xc6,0xc7,0xc8,0xc9,0xca,0xcb,0xcc,0xcd,0xce,0xcf,0xd0,0xd1,0xd2,0xd3,0xd4,0};
-        // clang-format on
-
-        oled_write_P(qmk_logo, false);
+    if (is_keyboard_master()) {
         oled_write_P(PSTR("Kyria rev2.1\n\n"), false);
 
         // Host Keyboard Layer Status
@@ -273,6 +302,19 @@ bool oled_task_user(void) {
                 break;
             case _ADJUST:
                 oled_write_P(PSTR("Adjust\n"), false);
+                break;
+            default:
+                oled_write_P(PSTR("Undefined\n"), false);
+        }
+
+        // Host Keyboard Rotary Encoder Status
+        oled_write_P(PSTR("Left RE: "), false);
+        switch (left_encoder_state) {
+            case _RE_MEDIA:
+                oled_write_P(PSTR("Volume\n"), false);
+                break;
+            case _RE_TABSWITCH:
+                oled_write_P(PSTR("Tabs\n"), false);
                 break;
             default:
                 oled_write_P(PSTR("Undefined\n"), false);
@@ -308,26 +350,26 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     if (index == 0) {
         // Volume control
         if (clockwise) {
-            switch (left_encoder_state)
-            {
-            case _RE_MEDIA:
-                tap_code(KC_VOLU);
-                break;
-            case _RE_WINDOW:
-                tap_code16(C(KC_TAB));
-            default:
-                break;
+            switch (left_encoder_state) {
+                case _RE_MEDIA:
+                    tap_code(KC_VOLU);
+                    break;
+                case _RE_TABSWITCH:
+                    tap_code16(C(KC_TAB));
+                    break;
+                default:
+                    break;  
             }
         } else {
-            switch (left_encoder_state)
-            {
-            case _RE_MEDIA:
-                tap_code(KC_VOLD);
-                break;
-            case _RE_WINDOW:
-                tap_code16(S(C(KC_TAB)));
-            default:
-                break;
+            switch (left_encoder_state) {
+                case _RE_MEDIA:
+                    tap_code(KC_VOLD);
+                    break;
+                case _RE_TABSWITCH:
+                    tap_code16(S(C(KC_TAB)));
+                    break;
+                default:
+                    break;
             }
         }
     } else if (index == 1) {
