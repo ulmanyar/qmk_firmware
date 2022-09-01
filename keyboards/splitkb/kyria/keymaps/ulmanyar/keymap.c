@@ -29,12 +29,33 @@ enum layers {
 enum left_encoder_states {
     _RE_MEDIA,
     _RE_TABSWITCH,
-    _NUMBER_OF_RE_STATES,
-} left_encoder_state;
+    _NUMBER_OF_LRE_STATES,
+};
+enum left_encoder_states left_encoder_state = _RE_TABSWITCH;
+
+enum right_encoder_states {
+    _RE_SCROLL,
+    _RE_WINSWITCH,
+    _NUMBER_OF_RRE_STATES,
+};
+enum right_encoder_states right_encoder_state = _RE_SCROLL;
+
+// For right encoder window management
+bool is_alt_tab_active = false;
+uint16_t alt_tab_timer = 0;
+
+void matrix_scan_user(void) {
+  if (is_alt_tab_active) {
+    if (timer_elapsed(alt_tab_timer) > 1250) {
+      unregister_code(KC_LALT);
+      is_alt_tab_active = false;
+    }
+  }
+}
 
 enum custom_keycodes {
     L_RE_ST = SAFE_RANGE,
-    L_RE_FN,
+    R_RE_ST,
 };
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
@@ -42,9 +63,17 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         case L_RE_ST:
             if (record->event.pressed) {
                 // when keycode L_RE_ST is pressed
-                left_encoder_state = (left_encoder_state + 1) % _NUMBER_OF_RE_STATES;
+                left_encoder_state = (left_encoder_state + 1) % _NUMBER_OF_LRE_STATES;
             } else {
                 // when keycode L_RE_ST is released
+            }
+            break;
+        case R_RE_ST:
+            if (record->event.pressed) {
+                // when keycode R_RE_ST is pressed
+                right_encoder_state = (right_encoder_state + 1) % _NUMBER_OF_RRE_STATES;
+            } else {
+                // when keycode R_RE_ST is released
             }
             break;
         default:
@@ -57,11 +86,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 enum {
     TD_ARNG_QUOT,
     TD_LREM_LREF,
+    TD_RREM_RREF,
 };
 
 void dance_left_re(qk_tap_dance_state_t *state, void *user_data) {
     if (state->count == 1) {
-        left_encoder_state = (left_encoder_state + 1) % _NUMBER_OF_RE_STATES;
+        left_encoder_state = (left_encoder_state + 1) % _NUMBER_OF_LRE_STATES;
     } else {
         switch (left_encoder_state) {
             case _RE_MEDIA:
@@ -79,12 +109,37 @@ void dance_left_re(qk_tap_dance_state_t *state, void *user_data) {
     reset_tap_dance(state);
 }
 
+void dance_right_re(qk_tap_dance_state_t *state, void *user_data) {
+    if (state->count == 1) {
+        if (is_alt_tab_active) {
+            unregister_code(KC_LALT);
+            is_alt_tab_active = false;
+        } else {
+            right_encoder_state = (right_encoder_state + 1) % _NUMBER_OF_RRE_STATES;
+        }
+    } else {
+        switch (right_encoder_state) {
+            case _RE_SCROLL:
+                // TBD
+                break;
+            case _RE_WINSWITCH:
+                // Close window
+                tap_code16(A(KC_F4));
+                break;
+            default:
+                break;
+        }
+    }
+    reset_tap_dance(state);
+}
+
 // Tap Dance definitions
 qk_tap_dance_action_t tap_dance_actions[] = {
     // Tap once for Å, twice for Caps Lock
     [TD_ARNG_QUOT] = ACTION_TAP_DANCE_DOUBLE(SE_ARNG, SE_QUOT),
     // Tap once for function switching, twice for function execution
     [TD_LREM_LREF] = ACTION_TAP_DANCE_FN(dance_left_re),
+    [TD_RREM_RREF] = ACTION_TAP_DANCE_FN(dance_right_re),
 };
 
 // Aliases for readability
@@ -98,6 +153,7 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 
 #define AA_QUOT  TD(TD_ARNG_QUOT)
 #define L_RE_TAP TD(TD_LREM_LREF)
+#define R_RE_TAP TD(TD_RREM_RREF)
 #define CTL_ESC  MT(MOD_LCTL, KC_ESC)
 #define CTL_ADIA MT(MOD_RCTL, SE_ADIA)
 #define CTL_MINS MT(MOD_RCTL, KC_MINUS)
@@ -106,7 +162,8 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 // Custom tapping terms
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
-        case L_RE_TAP: // TODO: Catch all REs
+        case R_RE_TAP:
+        case L_RE_TAP:
             // Rotary encoders are slower to double-tap
             return TAPPING_TERM + 200;
         default:
@@ -140,7 +197,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      CTL_ESC , SE_A ,  SE_S   ,  SE_D  ,   SE_F ,   SE_G ,                                        SE_H,   SE_J ,  SE_K ,   SE_L ,SE_ODIA,CTL_ADIA,
      KC_LSFT , SE_Z ,  SE_X   ,  SE_C  ,   SE_V ,   SE_B , KC_LBRC,KC_CAPS,     FKEYS  , KC_RBRC, SE_N,   SE_M ,SE_COMM, SE_DOT ,SE_MINS, KC_RSFT,
                                 // ADJUST , KC_LGUI, ALT_ENT, KC_SPC , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT, KC_APP
-                               L_RE_TAP, KC_LGUI, ALT_ENT, KC_SPC , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT, KC_APP
+                               L_RE_TAP, KC_LGUI, ALT_ENT, KC_SPC , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT,R_RE_TAP
     ),
 
 /*
@@ -223,7 +280,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       _______,  KC_F9 ,  KC_F10,  KC_F11,  KC_F12, _______,                                     _______, _______, _______, _______, _______, _______,
       _______,  KC_F5 ,  KC_F6 ,  KC_F7 ,  KC_F8 , _______,                                     _______, KC_RSFT, KC_RCTL, KC_LALT, KC_RGUI, _______,
       _______,  KC_F1 ,  KC_F2 ,  KC_F3 ,  KC_F4 , _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-                                 _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
+                                 _______, _______, _______, _______, ADJUST , _______, _______, _______, _______, _______
     ),
 
 /*
@@ -283,7 +340,7 @@ bool oled_task_user(void) {
         oled_write_P(PSTR("Kyria rev2.1\n\n"), false);
 
         // Host Keyboard Layer Status
-        oled_write_P(PSTR("Layer: "), false);
+        oled_write_P(PSTR("Layer:    "), false);
         switch (get_highest_layer(layer_state|default_layer_state)) {
             case _QWERTY:
                 oled_write_P(PSTR("QWERTY\n"), false);
@@ -307,8 +364,9 @@ bool oled_task_user(void) {
                 oled_write_P(PSTR("Undefined\n"), false);
         }
 
+        #ifdef ENCODER_ENABLE
         // Host Keyboard Rotary Encoder Status
-        oled_write_P(PSTR("Left RE: "), false);
+        oled_write_P(PSTR("Left RE:  "), false);
         switch (left_encoder_state) {
             case _RE_MEDIA:
                 oled_write_P(PSTR("Volume\n"), false);
@@ -319,6 +377,18 @@ bool oled_task_user(void) {
             default:
                 oled_write_P(PSTR("Undefined\n"), false);
         }
+        oled_write_P(PSTR("Right RE: "), false);
+        switch (right_encoder_state) {
+            case _RE_SCROLL:
+                oled_write_P(PSTR("Scroll\n"), false);
+                break;
+            case _RE_WINSWITCH:
+                oled_write_P(PSTR("Windows\n"), false);
+                break;
+            default:
+                oled_write_P(PSTR("Undefined\n"), false);
+        }
+        #endif
 
         // Write host Keyboard LED Status to OLEDs
         led_t led_usb_state = host_keyboard_led_state();
@@ -326,6 +396,7 @@ bool oled_task_user(void) {
         oled_write_P(led_usb_state.caps_lock   ? PSTR("CAPLCK ") : PSTR("       "), false);
         oled_write_P(led_usb_state.scroll_lock ? PSTR("SCRLCK ") : PSTR("       "), false);
     } else {
+        #ifdef DISPLAY_KYRIA_LOGO
         // clang-format off
         static const char PROGMEM kyria_logo[] = {
             0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,128,128,192,224,240,112,120, 56, 60, 28, 30, 14, 14, 14,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7,  7, 14, 14, 14, 30, 28, 60, 56,120,112,240,224,192,128,128,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
@@ -339,6 +410,9 @@ bool oled_task_user(void) {
         };
         // clang-format on
         oled_write_raw_P(kyria_logo, sizeof(kyria_logo));
+        #else
+        oled_write_P(PSTR("TBD\n"), false);
+        #endif
     }
     return false;
 }
@@ -348,36 +422,56 @@ bool oled_task_user(void) {
 bool encoder_update_user(uint8_t index, bool clockwise) {
 
     if (index == 0) {
-        // Volume control
-        if (clockwise) {
-            switch (left_encoder_state) {
-                case _RE_MEDIA:
+        switch (left_encoder_state) {
+            case _RE_MEDIA:
+                // Volume control
+                if (clockwise) {
                     tap_code(KC_VOLU);
-                    break;
-                case _RE_TABSWITCH:
-                    tap_code16(C(KC_TAB));
-                    break;
-                default:
-                    break;  
-            }
-        } else {
-            switch (left_encoder_state) {
-                case _RE_MEDIA:
+                } else {
                     tap_code(KC_VOLD);
-                    break;
-                case _RE_TABSWITCH:
+                }
+                break;
+            case _RE_TABSWITCH:
+                // Switch tabs using Ctrl-Tab
+                if (clockwise) {
+                    tap_code16(C(KC_TAB));
+                } else {
                     tap_code16(S(C(KC_TAB)));
-                    break;
-                default:
-                    break;
-            }
+                }
+                break;
+            default:
+                break;  
         }
     } else if (index == 1) {
-        // Page up/Page down
-        if (clockwise) {
-            tap_code(KC_PGUP);
-        } else {
-            tap_code(KC_PGDN);
+        switch (right_encoder_state) {
+            case _RE_WINSWITCH:
+                // Alt-Tab
+                if (clockwise) {
+                    if (!is_alt_tab_active) {
+                        is_alt_tab_active = true;
+                        register_code(KC_LALT);
+                    }
+                    alt_tab_timer = timer_read();
+                    tap_code16(KC_TAB);
+                    } else {
+                    if (!is_alt_tab_active) {
+                        is_alt_tab_active = true;
+                        register_code(KC_LALT);
+                    }
+                    alt_tab_timer = timer_read();
+                    tap_code16(S(KC_TAB));
+                }
+            case _RE_SCROLL:
+                // Page up/Page down
+                if (clockwise) {
+                    tap_code(KC_PGUP);
+                    // tap_code16(KC_WH_U);
+                } else {
+                    tap_code(KC_PGDN);
+                    // tap_code16(KC_WH_D);
+                }
+            default:
+                break;
         }
     }
     return false;

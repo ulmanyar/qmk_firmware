@@ -36,3 +36,8 @@
 
 // Lets you roll mod-tap keys
 #define IGNORE_MOD_TAP_INTERRUPT
+
+// EC11K encoders have a different resolution than other EC11 encoders.
+// When using the default resolution of 4, if you notice your encoder skipping
+// every other tick, lower the resolution to 2.
+#define ENCODER_RESOLUTION 2
