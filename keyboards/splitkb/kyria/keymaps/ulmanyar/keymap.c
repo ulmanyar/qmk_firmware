@@ -194,6 +194,29 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 }
 #endif
 
+#ifdef BOTH_SHIFTS_TURNS_ON_CAPS_WORD
+// Modified CAPS WORD for Swedish layout
+bool caps_word_press_user(uint16_t keycode) {
+    switch (keycode) {
+        // Keycodes that continue Caps Word, with shift applied.
+        case SE_A ... SE_Z:
+        case SE_MINS:
+            add_weak_mods(MOD_BIT(KC_LSFT));  // Apply shift to next key.
+            return true;
+
+        // Keycodes that continue Caps Word, without shifting.
+        case SE_1 ... SE_0:
+        case KC_BSPC:
+        case KC_DEL:
+        case SE_UNDS:
+            return true;
+
+        default:
+            return false;  // Deactivate Caps Word.
+    }
+}
+#endif
+
 // Tap Dance declarations
 enum {
     TD_ARNG_QUOT,
