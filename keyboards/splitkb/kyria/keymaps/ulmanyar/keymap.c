@@ -25,6 +25,8 @@ enum layers {
     _ADJUST,
 };
 
+// NOTE: Modify all tap-dance, keymaps etc. when disabling encoders
+#ifdef ENCODER_ENABLE
 // Encoder states
 enum left_encoder_states {
     _RE_MEDIA,
@@ -44,6 +46,7 @@ enum right_encoder_states right_encoder_state = _RE_SCROLL;
 bool is_alt_tab_active = false;
 uint16_t alt_tab_timer = 0;
 
+// Stop Alt-Tabbing using rotary enconder once the timer has run out
 void matrix_scan_user(void) {
   if (is_alt_tab_active) {
     if (timer_elapsed(alt_tab_timer) > 1250) {
@@ -58,9 +61,12 @@ enum custom_keycodes {
     R_RE_ST,
 };
 
+// Used to define macros
+// NOTE: Move out of #ifdef and create local #ifdef for rotary encoders when adding additional macros
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case L_RE_ST:
+            // Modify functionality of left rotary encoder
             if (record->event.pressed) {
                 // when keycode L_RE_ST is pressed
                 left_encoder_state = (left_encoder_state + 1) % _NUMBER_OF_LRE_STATES;
@@ -69,6 +75,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             break;
         case R_RE_ST:
+            // Modify functionality of right rotary encoder
             if (record->event.pressed) {
                 // when keycode R_RE_ST is pressed
                 right_encoder_state = (right_encoder_state + 1) % _NUMBER_OF_RRE_STATES;
@@ -82,13 +89,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     return true;
 };
 
-// Tap Dance declarations
-enum {
-    TD_ARNG_QUOT,
-    TD_LREM_LREF,
-    TD_RREM_RREF,
-};
-
+// Used for tap-dance of left rotary encoder
 void dance_left_re(qk_tap_dance_state_t *state, void *user_data) {
     if (state->count == 1) {
         left_encoder_state = (left_encoder_state + 1) % _NUMBER_OF_LRE_STATES;
@@ -109,6 +110,7 @@ void dance_left_re(qk_tap_dance_state_t *state, void *user_data) {
     reset_tap_dance(state);
 }
 
+// Used for tap-dance of right rotary encoder
 void dance_right_re(qk_tap_dance_state_t *state, void *user_data) {
     if (state->count == 1) {
         if (is_alt_tab_active) {
@@ -132,6 +134,72 @@ void dance_right_re(qk_tap_dance_state_t *state, void *user_data) {
     }
     reset_tap_dance(state);
 }
+
+bool encoder_update_user(uint8_t index, bool clockwise) {
+
+    if (index == 0) {
+        switch (left_encoder_state) {
+            case _RE_MEDIA:
+                // Volume control
+                if (clockwise) {
+                    tap_code(KC_VOLU);
+                } else {
+                    tap_code(KC_VOLD);
+                }
+                break;
+            case _RE_TABSWITCH:
+                // Switch tabs using Ctrl-Tab
+                if (clockwise) {
+                    tap_code16(C(KC_TAB));
+                } else {
+                    tap_code16(S(C(KC_TAB)));
+                }
+                break;
+            default:
+                break;  
+        }
+    } else if (index == 1) {
+        switch (right_encoder_state) {
+            case _RE_WINSWITCH:
+                // Alt-Tab
+                if (clockwise) {
+                    if (!is_alt_tab_active) {
+                        is_alt_tab_active = true;
+                        register_code(KC_LALT);
+                    }
+                    alt_tab_timer = timer_read();
+                    tap_code16(KC_TAB);
+                    } else {
+                    if (!is_alt_tab_active) {
+                        is_alt_tab_active = true;
+                        register_code(KC_LALT);
+                    }
+                    alt_tab_timer = timer_read();
+                    tap_code16(S(KC_TAB));
+                }
+            case _RE_SCROLL:
+                // Page up/Page down
+                if (clockwise) {
+                    tap_code(KC_PGUP);
+                    // tap_code16(KC_WH_U);
+                } else {
+                    tap_code(KC_PGDN);
+                    // tap_code16(KC_WH_D);
+                }
+            default:
+                break;
+        }
+    }
+    return false;
+}
+#endif
+
+// Tap Dance declarations
+enum {
+    TD_ARNG_QUOT,
+    TD_LREM_LREF,
+    TD_RREM_RREF,
+};
 
 // Tap Dance definitions
 qk_tap_dance_action_t tap_dance_actions[] = {
@@ -418,62 +486,3 @@ bool oled_task_user(void) {
 }
 #endif
 
-#ifdef ENCODER_ENABLE
-bool encoder_update_user(uint8_t index, bool clockwise) {
-
-    if (index == 0) {
-        switch (left_encoder_state) {
-            case _RE_MEDIA:
-                // Volume control
-                if (clockwise) {
-                    tap_code(KC_VOLU);
-                } else {
-                    tap_code(KC_VOLD);
-                }
-                break;
-            case _RE_TABSWITCH:
-                // Switch tabs using Ctrl-Tab
-                if (clockwise) {
-                    tap_code16(C(KC_TAB));
-                } else {
-                    tap_code16(S(C(KC_TAB)));
-                }
-                break;
-            default:
-                break;  
-        }
-    } else if (index == 1) {
-        switch (right_encoder_state) {
-            case _RE_WINSWITCH:
-                // Alt-Tab
-                if (clockwise) {
-                    if (!is_alt_tab_active) {
-                        is_alt_tab_active = true;
-                        register_code(KC_LALT);
-                    }
-                    alt_tab_timer = timer_read();
-                    tap_code16(KC_TAB);
-                    } else {
-                    if (!is_alt_tab_active) {
-                        is_alt_tab_active = true;
-                        register_code(KC_LALT);
-                    }
-                    alt_tab_timer = timer_read();
-                    tap_code16(S(KC_TAB));
-                }
-            case _RE_SCROLL:
-                // Page up/Page down
-                if (clockwise) {
-                    tap_code(KC_PGUP);
-                    // tap_code16(KC_WH_U);
-                } else {
-                    tap_code(KC_PGDN);
-                    // tap_code16(KC_WH_D);
-                }
-            default:
-                break;
-        }
-    }
-    return false;
-}
-#endif
