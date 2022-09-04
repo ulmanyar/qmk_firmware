@@ -15,6 +15,7 @@
  */
 #include QMK_KEYBOARD_H
 #include "keymap_swedish.h"
+#include "sisyphos.h"
 
 enum layers {
     _QWERTY = 0,
@@ -337,6 +338,8 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_
 
 bool oled_task_user(void) {
     if (is_keyboard_master()) {
+        // render_sisyphos();
+        // return false;
         oled_write_P(PSTR("Kyria rev2.1\n\n"), false);
 
         // Host Keyboard Layer Status
