@@ -156,7 +156,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
                 }
                 break;
             default:
-                break;  
+                break;
         }
     } else if (index == 1) {
         switch (right_encoder_state) {
@@ -247,7 +247,6 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 #define R_RE_TAP TD(TD_RREM_RREF)
 #define CTL_ESC  MT(MOD_LCTL, KC_ESC)
 #define CTL_ADIA MT(MOD_RCTL, SE_ADIA)
-#define CTL_MINS MT(MOD_RCTL, KC_MINUS)
 #define ALT_ENT  MT(MOD_LALT, KC_ENT)
 
 // Custom tapping terms
@@ -257,6 +256,9 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
         case L_RE_TAP:
             // Rotary encoders are slower to double-tap
             return TAPPING_TERM + 200;
+        case CTL_ADIA:
+            // Custom tapping term for Ä to avoid ^L
+            return TAPPING_TERM + 50;
         default:
             return TAPPING_TERM;
     }
