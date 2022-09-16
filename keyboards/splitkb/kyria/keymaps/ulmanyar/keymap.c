@@ -37,24 +37,10 @@ enum left_encoder_states left_encoder_state = _RE_TABSWITCH;
 
 enum right_encoder_states {
     _RE_SCROLL,
-    _RE_WINSWITCH,
+    _RE_CURSOR,
     _NUMBER_OF_RRE_STATES,
 };
 enum right_encoder_states right_encoder_state = _RE_SCROLL;
-
-// For right encoder window management
-bool is_alt_tab_active = false;
-uint16_t alt_tab_timer = 0;
-
-// Stop Alt-Tabbing using rotary enconder once the timer has run out
-void matrix_scan_user(void) {
-  if (is_alt_tab_active) {
-    if (timer_elapsed(alt_tab_timer) > 750) {
-      unregister_code(KC_LALT);
-      is_alt_tab_active = false;
-    }
-  }
-}
 
 enum custom_keycodes {
     L_RE_ST = SAFE_RANGE,
@@ -113,18 +99,13 @@ void dance_left_re(qk_tap_dance_state_t *state, void *user_data) {
 // Used for tap-dance of right rotary encoder
 void dance_right_re(qk_tap_dance_state_t *state, void *user_data) {
     if (state->count == 1) {
-        if (is_alt_tab_active) {
-            unregister_code(KC_LALT);
-            is_alt_tab_active = false;
-        } else {
-            right_encoder_state = (right_encoder_state + 1) % _NUMBER_OF_RRE_STATES;
-        }
+        right_encoder_state = (right_encoder_state + 1) % _NUMBER_OF_RRE_STATES;
     } else {
         switch (right_encoder_state) {
             case _RE_SCROLL:
                 // TBD
                 break;
-            case _RE_WINSWITCH:
+            case _RE_CURSOR:
                 // Close window
                 tap_code16(A(KC_F4));
                 break;
@@ -134,6 +115,10 @@ void dance_right_re(qk_tap_dance_state_t *state, void *user_data) {
     }
     reset_tap_dance(state);
 }
+
+// Timer for accelerated scrolling
+static uint16_t scroll_timer = 0;
+static uint8_t scroll_step_size = 1;
 
 bool encoder_update_user(uint8_t index, bool clockwise) {
 
@@ -160,32 +145,34 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
         }
     } else if (index == 1) {
         switch (right_encoder_state) {
-            case _RE_WINSWITCH:
-                // Alt-Tab
+            case _RE_CURSOR:
+                // Move cursor one word to the left/right
                 if (clockwise) {
-                    if (!is_alt_tab_active) {
-                        is_alt_tab_active = true;
-                        register_code(KC_LALT);
-                    }
-                    alt_tab_timer = timer_read();
-                    tap_code16(KC_TAB);
-                    } else {
-                    if (!is_alt_tab_active) {
-                        is_alt_tab_active = true;
-                        register_code(KC_LALT);
-                    }
-                    alt_tab_timer = timer_read();
-                    tap_code16(S(KC_TAB));
-                }
-            case _RE_SCROLL:
-                // Page up/Page down
-                if (clockwise) {
-                    tap_code(KC_PGUP);
-                    // tap_code16(KC_WH_U);
+                    tap_code16(C(KC_RGHT));
                 } else {
-                    tap_code(KC_PGDN);
-                    // tap_code16(KC_WH_D);
+                    tap_code16(C(KC_LEFT));
                 }
+                break;
+            case _RE_SCROLL:
+                // Scroll up/down with accelerated speed
+                if (timer_elapsed(scroll_timer) < ACCSCROLL_REPEAT_INTERVAL) {
+                    scroll_step_size += ACCSCROLL_STEP_SIZE;
+                    scroll_step_size = (scroll_step_size > ACCSCROLL_MAX_STEP) ? ACCSCROLL_MAX_STEP : scroll_step_size;
+                } else {
+                    scroll_step_size = 1;
+                }
+                scroll_timer = timer_read();
+
+                if (clockwise) {
+                    for (uint8_t i = 0; i < scroll_step_size; i++) {
+                        tap_code(KC_UP);
+                    }
+                } else {
+                    for (uint8_t i = 0; i < scroll_step_size; i++) {
+                        tap_code(KC_DOWN);
+                    }
+                }
+                break;
             default:
                 break;
         }
@@ -291,7 +278,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      CTL_ESC , SE_A ,  SE_S   ,  SE_D  ,   SE_F ,   SE_G ,                                          SE_H ,   SE_J ,  SE_K ,   SE_L ,SE_ODIA,CTL_ADIA,
      KC_LSFT , SE_Z ,  SE_X   ,  SE_C  ,   SE_V ,   SE_B , KC_LBRC,KC_CAPS,     ADJUST , KC_RBRC,   SE_N ,   SE_M ,SE_COMM, SE_DOT ,SE_MINS, KC_RSFT,
                                 // ADJUST , KC_LGUI, ALT_ENT, KC_SPC , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT, KC_APP
-                               L_RE_TAP, KC_LGUI, ALT_ENT, KC_BSPC, NAV   ,     SYM    , KC_SPC ,  FKEYS , KC_RALT,R_RE_TAP
+                               L_RE_TAP, KC_LGUI, ALT_ENT, FKEYS  , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT,R_RE_TAP
     ),
 
 /*
@@ -333,7 +320,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       _______, SE_ACUT, SE_GRV , SE_CIRC, SE_TILD, SE_DIAE,                                     KC_PGUP, KC_HOME, KC_UP,   KC_END,  KC_VOLU, KC_SLEP,
       _______, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT, _______,                                     KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT, KC_VOLD, KC_INS,
       _______, _______, _______, _______, _______, _______, _______, KC_SLCK, _______, _______,KC_PAUSE, KC_MPRV, KC_MPLY, KC_MNXT, KC_MUTE, KC_PSCR,
-                                 _______, _______, _______, KC_DEL , _______, _______, _______, _______, KC_RGUI, _______
+                                 _______, _______, _______,_______, _______, _______, _______, KC_DEL  , _______, _______
     ),
 
 /*
@@ -476,8 +463,8 @@ bool oled_task_user(void) {
             case _RE_SCROLL:
                 oled_write_P(PSTR("Scroll\n"), false);
                 break;
-            case _RE_WINSWITCH:
-                oled_write_P(PSTR("Windows\n"), false);
+            case _RE_CURSOR:
+                oled_write_P(PSTR("Cursor\n"), false);
                 break;
             default:
                 oled_write_P(PSTR("Undefined\n"), false);
