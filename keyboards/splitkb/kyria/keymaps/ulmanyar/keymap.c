@@ -224,18 +224,28 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 #define QWERTY   DF(_QWERTY)
 #define GAMING   DF(_GAMING)
 
+// Layers
 #define SYM      MO(_SYM)
 #define NAV      MO(_NAV)
 #define FKEYS    MO(_FUNCTION)
 #define ADJUST   MO(_ADJUST)
 
+// Tap-dance
 #define AA_QUOT  TD(TD_ARNG_QUOT)
 #define L_RE_TAP TD(TD_LREM_LREF)
 #define R_RE_TAP TD(TD_RREM_RREF)
+
+// Mod-tap
 #define CTL_ESC  MT(MOD_LCTL, KC_ESC)
 #define CTL_ADIA MT(MOD_RCTL, SE_ADIA)
 #define ALT_ENT  MT(MOD_LALT, KC_ENT)
-#define RALT_ENT  MT(MOD_RALT, KC_ENT)
+#define RALT_ENT MT(MOD_RALT, KC_ENT)
+
+// Windows Virtual Desktop Navigation
+#define VD_NEW   G(C(SE_D))
+#define VD_CLOSE G(C(KC_F4))
+#define VD_LEFT  G(C(KC_LEFT))
+#define VD_RIGHT G(C(KC_RIGHT))
 
 // Custom tapping terms
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
@@ -319,7 +329,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_NAV] = LAYOUT(
       _______, SE_ACUT, SE_GRV , SE_CIRC, SE_TILD, SE_DIAE,                                     KC_PGUP, KC_HOME, KC_UP,   KC_END,  KC_VOLU, KC_SLEP,
       _______, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT, _______,                                     KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT, KC_VOLD, KC_INS,
-      _______, _______, _______, _______, _______, _______, _______, KC_SLCK, _______, _______,KC_PAUSE, KC_MPRV, KC_MPLY, KC_MNXT, KC_MUTE, KC_PSCR,
+      _______,VD_CLOSE, VD_LEFT,VD_RIGHT, VD_NEW , _______, _______, KC_SLCK, _______, _______,KC_PAUSE, KC_MPRV, KC_MPLY, KC_MNXT, KC_MUTE, KC_PSCR,
                                  _______, _______, _______,_______, _______, _______, _______, KC_DEL  , _______, _______
     ),
 
@@ -340,7 +350,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_SYM] = LAYOUT(
      SE_SECT ,   SE_1 ,   SE_2 ,   SE_3 ,   SE_4 ,   SE_5 ,                                       SE_6 ,   SE_7 ,   SE_8 ,   SE_9 ,   SE_0 , SE_PLUS,
      SE_HALF , SE_EXLM, SE_DQUO, SE_HASH, SE_CURR, SE_PERC,                                     SE_AMPR, SE_SLSH, SE_LPRN, SE_RPRN, SE_EQL , SE_QUES,
-     SE_LABK , SE_RABK, SE_AT  , SE_PND , SE_DLR , SE_PIPE, _______, _______, _______, _______, SE_ASTR, SE_LCBR, SE_LBRC, SE_RBRC, SE_RCBR, SE_BSLS,
+     SE_LABK , SE_RABK, SE_AT  , SE_PND , SE_DLR , SE_PIPE, _______, _______, KC_RGUI, _______, SE_ASTR, SE_LCBR, SE_LBRC, SE_RBRC, SE_RCBR, SE_BSLS,
                                  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
     ),
 /*
