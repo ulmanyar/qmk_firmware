@@ -41,3 +41,9 @@
 // When using the default resolution of 4, if you notice your encoder skipping
 // every other tick, lower the resolution to 2.
 #define ENCODER_RESOLUTION 2
+
+#define DISPLAY_KYRIA_LOGO
+
+#define ACCSCROLL_MAX_STEP 18
+#define ACCSCROLL_STEP_SIZE 3
+#define ACCSCROLL_REPEAT_INTERVAL 75

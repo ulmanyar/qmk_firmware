@@ -26,6 +26,8 @@ enum layers {
     _ADJUST,
 };
 
+// NOTE: Modify all tap-dance, keymaps etc. when disabling encoders
+#ifdef ENCODER_ENABLE
 // Encoder states
 enum left_encoder_states {
     _RE_MEDIA,
@@ -36,32 +38,22 @@ enum left_encoder_states left_encoder_state = _RE_TABSWITCH;
 
 enum right_encoder_states {
     _RE_SCROLL,
-    _RE_WINSWITCH,
+    _RE_CURSOR,
     _NUMBER_OF_RRE_STATES,
 };
 enum right_encoder_states right_encoder_state = _RE_SCROLL;
-
-// For right encoder window management
-bool is_alt_tab_active = false;
-uint16_t alt_tab_timer = 0;
-
-void matrix_scan_user(void) {
-  if (is_alt_tab_active) {
-    if (timer_elapsed(alt_tab_timer) > 1250) {
-      unregister_code(KC_LALT);
-      is_alt_tab_active = false;
-    }
-  }
-}
 
 enum custom_keycodes {
     L_RE_ST = SAFE_RANGE,
     R_RE_ST,
 };
 
+// Used to define macros
+// NOTE: Move out of #ifdef and create local #ifdef for rotary encoders when adding additional macros
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case L_RE_ST:
+            // Modify functionality of left rotary encoder
             if (record->event.pressed) {
                 // when keycode L_RE_ST is pressed
                 left_encoder_state = (left_encoder_state + 1) % _NUMBER_OF_LRE_STATES;
@@ -70,6 +62,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             break;
         case R_RE_ST:
+            // Modify functionality of right rotary encoder
             if (record->event.pressed) {
                 // when keycode R_RE_ST is pressed
                 right_encoder_state = (right_encoder_state + 1) % _NUMBER_OF_RRE_STATES;
@@ -83,13 +76,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     return true;
 };
 
-// Tap Dance declarations
-enum {
-    TD_ARNG_QUOT,
-    TD_LREM_LREF,
-    TD_RREM_RREF,
-};
-
+// Used for tap-dance of left rotary encoder
 void dance_left_re(qk_tap_dance_state_t *state, void *user_data) {
     if (state->count == 1) {
         left_encoder_state = (left_encoder_state + 1) % _NUMBER_OF_LRE_STATES;
@@ -110,20 +97,16 @@ void dance_left_re(qk_tap_dance_state_t *state, void *user_data) {
     reset_tap_dance(state);
 }
 
+// Used for tap-dance of right rotary encoder
 void dance_right_re(qk_tap_dance_state_t *state, void *user_data) {
     if (state->count == 1) {
-        if (is_alt_tab_active) {
-            unregister_code(KC_LALT);
-            is_alt_tab_active = false;
-        } else {
-            right_encoder_state = (right_encoder_state + 1) % _NUMBER_OF_RRE_STATES;
-        }
+        right_encoder_state = (right_encoder_state + 1) % _NUMBER_OF_RRE_STATES;
     } else {
         switch (right_encoder_state) {
             case _RE_SCROLL:
                 // TBD
                 break;
-            case _RE_WINSWITCH:
+            case _RE_CURSOR:
                 // Close window
                 tap_code16(A(KC_F4));
                 break;
@@ -133,6 +116,101 @@ void dance_right_re(qk_tap_dance_state_t *state, void *user_data) {
     }
     reset_tap_dance(state);
 }
+
+// Timer for accelerated scrolling
+static uint16_t scroll_timer = 0;
+static uint8_t scroll_step_size = 1;
+
+bool encoder_update_user(uint8_t index, bool clockwise) {
+
+    if (index == 0) {
+        switch (left_encoder_state) {
+            case _RE_MEDIA:
+                // Volume control
+                if (clockwise) {
+                    tap_code(KC_VOLU);
+                } else {
+                    tap_code(KC_VOLD);
+                }
+                break;
+            case _RE_TABSWITCH:
+                // Switch tabs using Ctrl-Tab
+                if (clockwise) {
+                    tap_code16(C(KC_TAB));
+                } else {
+                    tap_code16(S(C(KC_TAB)));
+                }
+                break;
+            default:
+                break;
+        }
+    } else if (index == 1) {
+        switch (right_encoder_state) {
+            case _RE_CURSOR:
+                // Move cursor one word to the left/right
+                if (clockwise) {
+                    tap_code16(C(KC_RGHT));
+                } else {
+                    tap_code16(C(KC_LEFT));
+                }
+                break;
+            case _RE_SCROLL:
+                // Scroll up/down with accelerated speed
+                if (timer_elapsed(scroll_timer) < ACCSCROLL_REPEAT_INTERVAL) {
+                    scroll_step_size += ACCSCROLL_STEP_SIZE;
+                    scroll_step_size = (scroll_step_size > ACCSCROLL_MAX_STEP) ? ACCSCROLL_MAX_STEP : scroll_step_size;
+                } else {
+                    scroll_step_size = 1;
+                }
+                scroll_timer = timer_read();
+
+                if (clockwise) {
+                    for (uint8_t i = 0; i < scroll_step_size; i++) {
+                        tap_code(KC_UP);
+                    }
+                } else {
+                    for (uint8_t i = 0; i < scroll_step_size; i++) {
+                        tap_code(KC_DOWN);
+                    }
+                }
+                break;
+            default:
+                break;
+        }
+    }
+    return false;
+}
+#endif
+
+#ifdef BOTH_SHIFTS_TURNS_ON_CAPS_WORD
+// Modified CAPS WORD for Swedish layout
+bool caps_word_press_user(uint16_t keycode) {
+    switch (keycode) {
+        // Keycodes that continue Caps Word, with shift applied.
+        case SE_A ... SE_Z:
+        case SE_MINS:
+            add_weak_mods(MOD_BIT(KC_LSFT));  // Apply shift to next key.
+            return true;
+
+        // Keycodes that continue Caps Word, without shifting.
+        case SE_1 ... SE_0:
+        case KC_BSPC:
+        case KC_DEL:
+        case SE_UNDS:
+            return true;
+
+        default:
+            return false;  // Deactivate Caps Word.
+    }
+}
+#endif
+
+// Tap Dance declarations
+enum {
+    TD_ARNG_QUOT,
+    TD_LREM_LREF,
+    TD_RREM_RREF,
+};
 
 // Tap Dance definitions
 qk_tap_dance_action_t tap_dance_actions[] = {
@@ -147,18 +225,28 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 #define QWERTY   DF(_QWERTY)
 #define GAMING   DF(_GAMING)
 
+// Layers
 #define SYM      MO(_SYM)
 #define NAV      MO(_NAV)
 #define FKEYS    MO(_FUNCTION)
 #define ADJUST   MO(_ADJUST)
 
+// Tap-dance
 #define AA_QUOT  TD(TD_ARNG_QUOT)
 #define L_RE_TAP TD(TD_LREM_LREF)
 #define R_RE_TAP TD(TD_RREM_RREF)
+
+// Mod-tap
 #define CTL_ESC  MT(MOD_LCTL, KC_ESC)
 #define CTL_ADIA MT(MOD_RCTL, SE_ADIA)
-#define CTL_MINS MT(MOD_RCTL, KC_MINUS)
 #define ALT_ENT  MT(MOD_LALT, KC_ENT)
+#define RALT_ENT MT(MOD_RALT, KC_ENT)
+
+// Windows Virtual Desktop Navigation
+#define VD_NEW   G(C(SE_D))
+#define VD_CLOSE G(C(KC_F4))
+#define VD_LEFT  G(C(KC_LEFT))
+#define VD_RIGHT G(C(KC_RIGHT))
 
 // Custom tapping terms
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
@@ -167,6 +255,9 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
         case L_RE_TAP:
             // Rotary encoders are slower to double-tap
             return TAPPING_TERM + 200;
+        case CTL_ADIA:
+            // Custom tapping term for Ä to avoid ^L
+            return TAPPING_TERM + 50;
         default:
             return TAPPING_TERM;
     }
@@ -194,11 +285,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_QWERTY] = LAYOUT(
-     KC_TAB  , SE_Q ,  SE_W   ,  SE_E  ,   SE_R ,   SE_T ,                                        SE_Y,   SE_U ,  SE_I ,   SE_O ,  SE_P , AA_QUOT,
-     CTL_ESC , SE_A ,  SE_S   ,  SE_D  ,   SE_F ,   SE_G ,                                        SE_H,   SE_J ,  SE_K ,   SE_L ,SE_ODIA,CTL_ADIA,
-     KC_LSFT , SE_Z ,  SE_X   ,  SE_C  ,   SE_V ,   SE_B , KC_LBRC,KC_CAPS,     FKEYS  , KC_RBRC, SE_N,   SE_M ,SE_COMM, SE_DOT ,SE_MINS, KC_RSFT,
+     KC_TAB  , SE_Q ,  SE_W   ,  SE_E  ,   SE_R ,   SE_T ,                                          SE_Y ,   SE_U ,  SE_I ,   SE_O ,  SE_P , AA_QUOT,
+     CTL_ESC , SE_A ,  SE_S   ,  SE_D  ,   SE_F ,   SE_G ,                                          SE_H ,   SE_J ,  SE_K ,   SE_L ,SE_ODIA,CTL_ADIA,
+     KC_LSFT , SE_Z ,  SE_X   ,  SE_C  ,   SE_V ,   SE_B , KC_LBRC,KC_CAPS,     ADJUST , KC_RBRC,   SE_N ,   SE_M ,SE_COMM, SE_DOT ,SE_MINS, KC_RSFT,
                                 // ADJUST , KC_LGUI, ALT_ENT, KC_SPC , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT, KC_APP
-                               L_RE_TAP, KC_LGUI, ALT_ENT, KC_SPC , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT,R_RE_TAP
+                               L_RE_TAP, KC_LGUI, ALT_ENT, FKEYS  , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT,R_RE_TAP
     ),
 
 /*
@@ -226,21 +317,21 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * Nav Layer: Media, navigation
  *
  * ,-------------------------------------------.                              ,-------------------------------------------.
- * |        |      |      |      |      |      |                              | PgUp | Home |   ↑  | End  | VolUp| Sleep  |
+ * |        |   ´  |   `  |   ^  |   ~  |   ¨  |                              | PgUp | Home |   ↑  | End  | VolUp| Sleep  |
  * |--------+------+------+------+------+------|                              |------+------+------+------+------+--------|
  * |        |  GUI |  Alt | Ctrl | Shift|      |                              | PgDn |  ←   |   ↓  |   →  | VolDn| Insert |
  * |--------+------+------+------+------+------+-------------.  ,-------------+------+------+------+------+------+--------|
  * |        |      |      |      |      |      |      |ScLck |  |      |      | Pause|M Prev|M Play|M Next|VolMut| PrtSc  |
  * `----------------------+------+------+------+------+------|  |------+------+------+------+------+----------------------'
- *                        |      |      |      |      |      |  |      |      |Delete| RGUI |      |
+ *                        |      |      |      |Delete|      |  |      |      |      | RGUI |      |
  *                        |      |      |      |      |      |  |      |      |      |      |      |
  *                        `----------------------------------'  `----------------------------------'
  */
     [_NAV] = LAYOUT(
       _______, SE_ACUT, SE_GRV , SE_CIRC, SE_TILD, SE_DIAE,                                     KC_PGUP, KC_HOME, KC_UP,   KC_END,  KC_VOLU, KC_SLEP,
-      _______, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT, _______,                                     KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT, KC_VOLD, KC_INS,
-      _______, _______, _______, _______, _______, _______, _______, KC_SLCK, _______, _______,KC_PAUSE, KC_MPRV, KC_MPLY, KC_MNXT, KC_MUTE, KC_PSCR,
-                                 _______, _______, _______, _______, _______, _______, _______, KC_DEL , KC_RGUI, _______
+      _______, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT,A(KC_F4),                                     KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT, KC_VOLD, KC_INS,
+      _______,VD_CLOSE, VD_LEFT,VD_RIGHT, VD_NEW , _______, _______, KC_SLCK, _______, _______,KC_PAUSE, KC_MPRV, KC_MPLY, KC_MNXT, KC_MUTE, KC_PSCR,
+                                 _______, _______, _______,_______, _______, _______, _______, KC_DEL  , _______, _______
     ),
 
 /*
@@ -260,8 +351,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_SYM] = LAYOUT(
      SE_SECT ,   SE_1 ,   SE_2 ,   SE_3 ,   SE_4 ,   SE_5 ,                                       SE_6 ,   SE_7 ,   SE_8 ,   SE_9 ,   SE_0 , SE_PLUS,
      SE_HALF , SE_EXLM, SE_DQUO, SE_HASH, SE_CURR, SE_PERC,                                     SE_AMPR, SE_SLSH, SE_LPRN, SE_RPRN, SE_EQL , SE_QUES,
-     SE_LABK , SE_RABK, SE_AT  , SE_PND , SE_DLR , SE_PIPE, _______, _______, _______, _______, SE_ASTR, SE_LCBR, SE_LBRC, SE_RBRC, SE_RCBR, SE_BSLS,
-                                 _______, _______, _______, _______, _______, _______, _______, KC_DEL , _______, _______
+     SE_LABK , SE_RABK, SE_AT  , SE_PND , SE_DLR , SE_PIPE, _______, _______, KC_RGUI, _______, SE_ASTR, SE_LCBR, SE_LBRC, SE_RBRC, SE_RCBR, SE_BSLS,
+                                 _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
     ),
 /*
  * Function Layer: Function keys
@@ -281,7 +372,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       _______,  KC_F9 ,  KC_F10,  KC_F11,  KC_F12, _______,                                     _______, _______, _______, _______, _______, _______,
       _______,  KC_F5 ,  KC_F6 ,  KC_F7 ,  KC_F8 , _______,                                     _______, KC_RSFT, KC_RCTL, KC_LALT, KC_RGUI, _______,
       _______,  KC_F1 ,  KC_F2 ,  KC_F3 ,  KC_F4 , _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
-                                 _______, _______, _______, _______, ADJUST , _______, _______, _______, _______, _______
+                                 _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
     ),
 
 /*
@@ -385,8 +476,8 @@ bool oled_task_user(void) {
             case _RE_SCROLL:
                 oled_write_P(PSTR("Scroll\n"), false);
                 break;
-            case _RE_WINSWITCH:
-                oled_write_P(PSTR("Windows\n"), false);
+            case _RE_CURSOR:
+                oled_write_P(PSTR("Cursor\n"), false);
                 break;
             default:
                 oled_write_P(PSTR("Undefined\n"), false);
@@ -421,62 +512,3 @@ bool oled_task_user(void) {
 }
 #endif
 
-#ifdef ENCODER_ENABLE
-bool encoder_update_user(uint8_t index, bool clockwise) {
-
-    if (index == 0) {
-        switch (left_encoder_state) {
-            case _RE_MEDIA:
-                // Volume control
-                if (clockwise) {
-                    tap_code(KC_VOLU);
-                } else {
-                    tap_code(KC_VOLD);
-                }
-                break;
-            case _RE_TABSWITCH:
-                // Switch tabs using Ctrl-Tab
-                if (clockwise) {
-                    tap_code16(C(KC_TAB));
-                } else {
-                    tap_code16(S(C(KC_TAB)));
-                }
-                break;
-            default:
-                break;  
-        }
-    } else if (index == 1) {
-        switch (right_encoder_state) {
-            case _RE_WINSWITCH:
-                // Alt-Tab
-                if (clockwise) {
-                    if (!is_alt_tab_active) {
-                        is_alt_tab_active = true;
-                        register_code(KC_LALT);
-                    }
-                    alt_tab_timer = timer_read();
-                    tap_code16(KC_TAB);
-                    } else {
-                    if (!is_alt_tab_active) {
-                        is_alt_tab_active = true;
-                        register_code(KC_LALT);
-                    }
-                    alt_tab_timer = timer_read();
-                    tap_code16(S(KC_TAB));
-                }
-            case _RE_SCROLL:
-                // Page up/Page down
-                if (clockwise) {
-                    tap_code(KC_PGUP);
-                    // tap_code16(KC_WH_U);
-                } else {
-                    tap_code(KC_PGDN);
-                    // tap_code16(KC_WH_D);
-                }
-            default:
-                break;
-        }
-    }
-    return false;
-}
-#endif
