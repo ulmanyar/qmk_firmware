@@ -187,6 +187,9 @@ bool caps_word_press_user(uint16_t keycode) {
     switch (keycode) {
         // Keycodes that continue Caps Word, with shift applied.
         case SE_A ... SE_Z:
+        case SE_ARNG:
+        case SE_ADIA:
+        case SE_ODIA:
         case SE_MINS:
             add_weak_mods(MOD_BIT(KC_LSFT));  // Apply shift to next key.
             return true;
@@ -428,10 +431,52 @@ oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_
 
 bool oled_task_user(void) {
     if (is_keyboard_master()) {
-        oled_write_P(PSTR("Kyria rev2.1\n\n"), false);
+        static const char PROGMEM layer_image[2][16] = {
+            // 'layers', 16x16px
+            {
+                0x00, 0x20, 0xd0, 0x90, 0x08, 0x08, 0x04, 0x04, 0x02, 0x82, 0x81, 0x41, 0x42, 0x24, 0x68, 0x90,
+            },
+            {
+                0x00, 0x09, 0x16, 0x24, 0x49, 0x92, 0x92, 0x49, 0x49, 0x24, 0x24, 0x12, 0x12, 0x09, 0x0b, 0x04,
+            },
+        };
+        static const char PROGMEM encoder_image[2][16] = {
+            // 'encoder', 16x16px
+            {
+                0x00, 0x00, 0x00, 0x00, 0xe0, 0x50, 0xd0, 0x88, 0x88, 0x88, 0xd0, 0x50, 0xe0, 0x00, 0x00, 0x00,
+            },
+            {
+                0x00, 0x00, 0x00, 0x20, 0x53, 0x55, 0x86, 0xbd, 0xba, 0xbd, 0x86, 0x55, 0x53, 0x20, 0x00, 0x00
+            },
+        };
+        // Write layer image
+        oled_set_cursor(0, 0);
+        oled_write_raw_P(layer_image[0], sizeof(layer_image[0]));
+        oled_advance_page(false);
+        oled_write_raw_P(layer_image[1], sizeof(layer_image[1]));
+        // Write left encoder image
+        oled_set_cursor(0, 2);
+        oled_write_raw_P(encoder_image[0], sizeof(encoder_image[0]));
+        oled_advance_page(false);
+        oled_write_raw_P(encoder_image[1], sizeof(encoder_image[1]));
+        int8_t x = 1;
+        int8_t y = 24;
+        oled_write_pixel(x, y, true);
+        oled_write_pixel(x+1, y-1, true);
+        oled_write_pixel(x+1, y+1, true);
+        // Write right encoder image
+        oled_set_cursor(0, 4);
+        oled_write_raw_P(encoder_image[0], sizeof(encoder_image[0]));
+        oled_advance_page(false);
+        oled_write_raw_P(encoder_image[1], sizeof(encoder_image[1]));
+        x = 15;
+        y = 40;
+        oled_write_pixel(x, y, true);
+        oled_write_pixel(x-1, y-1, true);
+        oled_write_pixel(x-1, y+1, true);
 
         // Host Keyboard Layer Status
-        oled_write_P(PSTR("Layer:    "), false);
+        oled_set_cursor(4, 1);
         switch (get_highest_layer(layer_state|default_layer_state)) {
             case _QWERTY:
                 oled_write_P(PSTR("QWERTY\n"), false);
@@ -440,10 +485,10 @@ bool oled_task_user(void) {
                 oled_write_P(PSTR("Gaming\n"), false);
                 break;
             case _NAV:
-                oled_write_P(PSTR("Nav\n"), false);
+                oled_write_P(PSTR("Navigation\n"), false);
                 break;
             case _SYM:
-                oled_write_P(PSTR("Sym\n"), false);
+                oled_write_P(PSTR("Symbols\n"), false);
                 break;
             case _FUNCTION:
                 oled_write_P(PSTR("Function\n"), false);
@@ -456,8 +501,8 @@ bool oled_task_user(void) {
         }
 
         #ifdef ENCODER_ENABLE
-        // Host Keyboard Rotary Encoder Status
-        oled_write_P(PSTR("Left RE:  "), false);
+        // Host Keyboard Left Rotary Encoder Status
+        oled_set_cursor(4, 3);
         switch (left_encoder_state) {
             case _RE_MEDIA:
                 oled_write_P(PSTR("Volume\n"), false);
@@ -468,7 +513,8 @@ bool oled_task_user(void) {
             default:
                 oled_write_P(PSTR("Undefined\n"), false);
         }
-        oled_write_P(PSTR("Right RE: "), false);
+        // Host Keyboard Right Rotary Encoder Status
+        oled_set_cursor(4, 5);
         switch (right_encoder_state) {
             case _RE_SCROLL:
                 oled_write_P(PSTR("Scroll\n"), false);
@@ -482,6 +528,7 @@ bool oled_task_user(void) {
         #endif
 
         // Write host Keyboard LED Status to OLEDs
+        oled_set_cursor(0, 7);
         led_t led_usb_state = host_keyboard_led_state();
         oled_write_P(led_usb_state.num_lock    ? PSTR("NUMLCK ") : PSTR("       "), false);
         oled_write_P(led_usb_state.caps_lock   ? PSTR("CAPLCK ") : PSTR("       "), false);
@@ -502,7 +549,7 @@ bool oled_task_user(void) {
         // clang-format on
         oled_write_raw_P(kyria_logo, sizeof(kyria_logo));
         #else
-        oled_write_P(PSTR("TBD\n"), false);
+        oled_write_P(PSTR("NO LOGO"), false);
         #endif
     }
     return false;
