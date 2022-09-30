@@ -209,7 +209,7 @@ bool caps_word_press_user(uint16_t keycode) {
 
 // Tap Dance declarations
 enum {
-    TD_ARNG_QUOT,
+    TD_N_QUOT,
     TD_LREM_LREF,
     TD_RREM_RREF,
 };
@@ -217,7 +217,7 @@ enum {
 // Tap Dance definitions
 qk_tap_dance_action_t tap_dance_actions[] = {
     // Tap once for Å, twice for Caps Lock
-    [TD_ARNG_QUOT] = ACTION_TAP_DANCE_DOUBLE(SE_ARNG, SE_QUOT),
+    [TD_N_QUOT] = ACTION_TAP_DANCE_DOUBLE(SE_N, SE_QUOT),
     // Tap once for function switching, twice for function execution
     [TD_LREM_LREF] = ACTION_TAP_DANCE_FN(dance_left_re),
     [TD_RREM_RREF] = ACTION_TAP_DANCE_FN(dance_right_re),
@@ -234,7 +234,7 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 #define ADJUST   MO(_ADJUST)
 
 // Tap-dance
-#define AA_QUOT  TD(TD_ARNG_QUOT)
+#define N_QUOT  TD(TD_N_QUOT)
 #define L_RE_TAP TD(TD_LREM_LREF)
 #define R_RE_TAP TD(TD_RREM_RREF)
 
@@ -287,9 +287,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  *                        `----------------------------------'  `----------------------------------'
  */
     [_QWERTY] = LAYOUT(
-     KC_TAB  , SE_Q ,  SE_W   ,  SE_E  ,   SE_R ,   SE_T ,                                          SE_Y ,   SE_U ,  SE_I ,   SE_O ,  SE_P , AA_QUOT,
+     KC_TAB  , SE_Q ,  SE_W   ,  SE_E  ,   SE_R ,   SE_T ,                                          SE_Y ,   SE_U ,  SE_I ,   SE_O ,  SE_P , SE_ARNG,
      CTL_ESC , SE_A ,  SE_S   ,  SE_D  ,   SE_F ,   SE_G ,                                          SE_H ,   SE_J ,  SE_K ,   SE_L ,SE_ODIA,CTL_ADIA,
-     KC_LSFT , SE_Z ,  SE_X   ,  SE_C  ,   SE_V ,   SE_B , KC_LBRC,KC_CAPS,     ADJUST , KC_RBRC,   SE_N ,   SE_M ,SE_COMM, SE_DOT ,SE_MINS, KC_RSFT,
+     KC_LSFT , SE_Z ,  SE_X   ,  SE_C  ,   SE_V ,   SE_B , KC_LBRC,KC_CAPS,     ADJUST , KC_RBRC, N_QUOT ,   SE_M ,SE_COMM, SE_DOT ,SE_MINS, KC_RSFT,
                                 // ADJUST , KC_LGUI, ALT_ENT, KC_SPC , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT, KC_APP
                                L_RE_TAP, KC_LGUI, ALT_ENT, FKEYS  , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT,R_RE_TAP
     ),
