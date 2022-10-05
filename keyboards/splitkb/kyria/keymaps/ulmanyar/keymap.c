@@ -209,15 +209,12 @@ bool caps_word_press_user(uint16_t keycode) {
 
 // Tap Dance declarations
 enum {
-    TD_N_QUOT,
     TD_LREM_LREF,
     TD_RREM_RREF,
 };
 
 // Tap Dance definitions
 qk_tap_dance_action_t tap_dance_actions[] = {
-    // Tap once for Å, twice for Caps Lock
-    [TD_N_QUOT] = ACTION_TAP_DANCE_DOUBLE(SE_N, SE_QUOT),
     // Tap once for function switching, twice for function execution
     [TD_LREM_LREF] = ACTION_TAP_DANCE_FN(dance_left_re),
     [TD_RREM_RREF] = ACTION_TAP_DANCE_FN(dance_right_re),
@@ -234,7 +231,6 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 #define ADJUST   MO(_ADJUST)
 
 // Tap-dance
-#define N_QUOT  TD(TD_N_QUOT)
 #define L_RE_TAP TD(TD_LREM_LREF)
 #define R_RE_TAP TD(TD_RREM_RREF)
 
@@ -242,7 +238,7 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 #define CTL_ESC  MT(MOD_LCTL, KC_ESC)
 #define CTL_ADIA MT(MOD_RCTL, SE_ADIA)
 #define ALT_ENT  MT(MOD_LALT, KC_ENT)
-#define RALT_ENT MT(MOD_RALT, KC_ENT)
+#define ALT_QUOT MT(MOD_RALT, SE_QUOT)
 
 // Windows Virtual Desktop Navigation
 #define VD_NEW   G(C(SE_D))
@@ -289,9 +285,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QWERTY] = LAYOUT(
      KC_TAB  , SE_Q ,  SE_W   ,  SE_E  ,   SE_R ,   SE_T ,                                          SE_Y ,   SE_U ,  SE_I ,   SE_O ,  SE_P , SE_ARNG,
      CTL_ESC , SE_A ,  SE_S   ,  SE_D  ,   SE_F ,   SE_G ,                                          SE_H ,   SE_J ,  SE_K ,   SE_L ,SE_ODIA,CTL_ADIA,
-     KC_LSFT , SE_Z ,  SE_X   ,  SE_C  ,   SE_V ,   SE_B , KC_LBRC,KC_CAPS,     ADJUST , KC_RBRC, N_QUOT ,   SE_M ,SE_COMM, SE_DOT ,SE_MINS, KC_RSFT,
+     KC_LSFT , SE_Z ,  SE_X   ,  SE_C  ,   SE_V ,   SE_B , KC_LBRC,KC_CAPS,     ADJUST , KC_RBRC,   SE_N ,   SE_M ,SE_COMM, SE_DOT ,SE_MINS, KC_LSFT,
                                 // ADJUST , KC_LGUI, ALT_ENT, KC_SPC , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT, KC_APP
-                               L_RE_TAP, KC_LGUI, ALT_ENT, FKEYS  , NAV   ,     SYM    , KC_SPC ,KC_BSPC, KC_RALT,R_RE_TAP
+                               L_RE_TAP, KC_LGUI, ALT_ENT, FKEYS  , NAV   ,     SYM    , KC_SPC ,KC_BSPC ,ALT_QUOT,R_RE_TAP
     ),
 
 /*
@@ -333,7 +329,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       _______, SE_ACUT, SE_GRV , SE_CIRC, SE_TILD, SE_DIAE,                                     KC_PGUP, KC_HOME, KC_UP,   KC_END,  KC_VOLU, KC_SLEP,
       _______, KC_LGUI, KC_LALT, KC_LCTL, KC_LSFT,A(KC_F4),                                     KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT, KC_VOLD, KC_INS,
       _______,VD_CLOSE, VD_LEFT,VD_RIGHT, VD_NEW , _______, _______, KC_SLCK, _______, _______,KC_PAUSE, KC_MPRV, KC_MPLY, KC_MNXT, KC_MUTE, KC_PSCR,
-                                 _______, _______, _______,_______, _______, _______, _______, KC_DEL  , _______, _______
+                                 _______, _______, _______, _______, _______, _______, _______, KC_DEL , _______, _______
     ),
 
 /*
@@ -353,7 +349,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_SYM] = LAYOUT(
      SE_SECT ,   SE_1 ,   SE_2 ,   SE_3 ,   SE_4 ,   SE_5 ,                                       SE_6 ,   SE_7 ,   SE_8 ,   SE_9 ,   SE_0 , SE_PLUS,
      SE_HALF , SE_EXLM, SE_DQUO, SE_HASH, SE_CURR, SE_PERC,                                     SE_AMPR, SE_SLSH, SE_LPRN, SE_RPRN, SE_EQL , SE_QUES,
-     SE_LABK , SE_RABK, SE_AT  , SE_PND , SE_DLR , SE_PIPE, _______, _______, KC_RGUI, _______, SE_ASTR, SE_LCBR, SE_LBRC, SE_RBRC, SE_RCBR, SE_BSLS,
+     SE_LABK , SE_RABK, SE_AT  , SE_PND , SE_DLR , SE_PIPE, _______, KC_NLCK, KC_RGUI, _______, SE_ASTR, SE_LCBR, SE_LBRC, SE_RBRC, SE_RCBR, SE_BSLS,
                                  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
     ),
 /*
@@ -459,21 +455,25 @@ bool oled_task_user(void) {
         oled_write_raw_P(encoder_image[0], sizeof(encoder_image[0]));
         oled_advance_page(false);
         oled_write_raw_P(encoder_image[1], sizeof(encoder_image[1]));
-        int8_t x = 1;
+        int8_t x = 17;
         int8_t y = 24;
-        oled_write_pixel(x, y, true);
-        oled_write_pixel(x+1, y-1, true);
+        oled_write_pixel(x+2, y,   true);
         oled_write_pixel(x+1, y+1, true);
+        oled_write_pixel(x,   y+2, true);
+        oled_write_pixel(x+1, y+3, true);
+        oled_write_pixel(x+2, y+4, true);
         // Write right encoder image
         oled_set_cursor(0, 4);
         oled_write_raw_P(encoder_image[0], sizeof(encoder_image[0]));
         oled_advance_page(false);
         oled_write_raw_P(encoder_image[1], sizeof(encoder_image[1]));
-        x = 15;
+        x = 18;
         y = 40;
-        oled_write_pixel(x, y, true);
-        oled_write_pixel(x-1, y-1, true);
-        oled_write_pixel(x-1, y+1, true);
+        oled_write_pixel(x,   y,   true);
+        oled_write_pixel(x+1, y+1, true);
+        oled_write_pixel(x+2, y+2, true);
+        oled_write_pixel(x+1, y+3, true);
+        oled_write_pixel(x,   y+4, true);
 
         // Host Keyboard Layer Status
         oled_set_cursor(4, 1);
