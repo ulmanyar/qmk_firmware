@@ -21,7 +21,7 @@
 // #define SPLIT_LAYER_STATE_ENABLE
 
 #ifdef TAP_DANCE_ENABLE
-#    define TAPPING_TERM 175
+#    define TAPPING_TERM 125
 #    define TAPPING_TERM_PER_KEY
 #endif
 
