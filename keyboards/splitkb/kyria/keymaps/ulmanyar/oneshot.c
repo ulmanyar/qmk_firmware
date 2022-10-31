@@ -32,13 +32,13 @@ void update_oneshot(
         }
     } else {
         if (record->event.pressed) {
-            if (is_oneshot_cancel_key(keycode) && *state != os_up_unqueued) {
+            if (is_oneshot_cancel_key(keycode, record) && *state != os_up_unqueued) {
                 // Cancel oneshot on designated cancel keydown.
                 *state = os_up_unqueued;
                 unregister_code(mod);
             }
         } else {
-            if (!is_oneshot_ignored_key(keycode)) {
+            if (!is_oneshot_ignored_key(keycode, record)) {
                 // On non-ignored keyup, consider the oneshot used.
                 switch (*state) {
                 case os_down_unused:

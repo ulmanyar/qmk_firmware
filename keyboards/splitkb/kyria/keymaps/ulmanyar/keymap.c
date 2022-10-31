@@ -160,32 +160,6 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 }
 #endif // ENCODER_ENABLE
 
-#ifdef BOTH_SHIFTS_TURNS_ON_CAPS_WORD
-// Modified CAPS WORD for Swedish layout
-bool caps_word_press_user(uint16_t keycode) {
-    switch (keycode) {
-        // Keycodes that continue Caps Word, with shift applied.
-        case SE_A ... SE_Z:
-        case SE_ARNG:
-        case SE_ADIA:
-        case SE_ODIA:
-        case SE_MINS:
-            add_weak_mods(MOD_BIT(KC_LSFT));  // Apply shift to next key.
-            return true;
-
-        // Keycodes that continue Caps Word, without shifting.
-        case SE_1 ... SE_0:
-        case KC_BSPC:
-        case KC_DEL:
-        case SE_UNDS:
-            return true;
-
-        default:
-            return false;  // Deactivate Caps Word.
-    }
-}
-#endif
-
 // Tap Dance declarations
 enum {
     TD_LREM_LREF,
@@ -243,9 +217,9 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QWERTY] = LAYOUT(
     // Missing: *LCK, RAlt
-      _______,  SE_Q  ,  SE_W  ,  SE_E  ,  SE_R  ,  SE_T  ,                                      SE_Y  ,  SE_U  ,  SE_I  ,  SE_O  ,  SE_P  , _______,
-      _______,  SE_A  ,  SE_S  ,  SE_D  ,  SE_F  ,  SE_G  ,                                      SE_H  ,  SE_J  ,  SE_K  ,  SE_L  ,SE_ODIA , _______,
-      _______,  SE_Z  ,  SE_X  ,  SE_C  ,  SE_V  ,  SE_B  , _______, _______, _______, _______,  SE_N  ,  SE_M  ,SE_COMM , SE_DOT ,SE_MINS , _______,
+      XXXXXXX,  SE_Q  ,  SE_W  ,  SE_E  ,  SE_R  ,  SE_T  ,                                      SE_Y  ,  SE_U  ,  SE_I  ,  SE_O  ,  SE_P  , XXXXXXX,
+      XXXXXXX,  SE_A  ,  SE_S  ,  SE_D  ,  SE_F  ,  SE_G  ,                                      SE_H  ,  SE_J  ,  SE_K  ,  SE_L  ,SE_ODIA , XXXXXXX,
+      XXXXXXX,  SE_Z  ,  SE_X  ,  SE_C  ,  SE_V  ,  SE_B  , _______, _______, _______, _______,  SE_N  ,  SE_M  ,SE_COMM , SE_DOT ,SE_MINS , XXXXXXX,
                                 L_RE_TAP, _______, NAV_ENT, SFT_ESC, _______, _______, SYM_SPC, NUM_BSP, _______,R_RE_TAP
     ),
 
@@ -294,8 +268,66 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //                                  _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
 //     ),
 };
+// clang-format on
 
-// Used to define macros etc.
+// *** Callum mods and (modified) swapper support code ***
+bool is_swapper_ignored_key(uint16_t keycode) {
+    switch (keycode) {
+    case KC_LSFT:
+    case KC_RSFT:
+    case OS_SHFT:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool is_oneshot_cancel_key(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+    // Separate tap/hold for all layer/mod tap keys
+    case SFT_ESC:
+    case SYM_SPC:
+    case NAV_ENT:
+    case NUM_BSP:
+        if (record->tap.count > 0) {
+            // Process taps
+            return false;
+        } else {
+            // Cancel on hold
+            return true;
+        }
+    default:
+        return false;
+    }
+}
+
+bool is_oneshot_ignored_key(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+    // Separate tap/hold for all layer/mod tap keys
+    case SFT_ESC:
+    case SYM_SPC:
+    case NAV_ENT:
+    case NUM_BSP:
+        if (record->tap.count > 0) {
+            // Process taps
+            return false;
+        } else {
+            // Ignore holds
+            return true;
+        }
+    // Ignore mods
+    case KC_LSFT:
+    case KC_RSFT:
+    case OS_SHFT:
+    case OS_CTRL:
+    case OS_ALT:
+    case OS_GUI:
+        return true;
+    default:
+        return false;
+    }
+}
+
 bool swap_windows_active = false;
 
 oneshot_state os_shft_state = os_up_unqueued;
@@ -303,6 +335,7 @@ oneshot_state os_ctrl_state = os_up_unqueued;
 oneshot_state os_alt_state = os_up_unqueued;
 oneshot_state os_cmd_state = os_up_unqueued;
 
+// User level override of process_record, used to define macros etc.
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     update_swapper(
         &swap_windows_active, KC_LALT, KC_TAB, SW_WIN,
@@ -354,46 +387,19 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     return true;
 };
 
-bool is_swapper_ignored_key(uint16_t keycode) {
-    switch (keycode) {
-    case KC_LSFT:
-    case KC_RSFT:
-    case OS_SHFT:
-        return true;
-    default:
-        return false;
-    }
+// Utility function to write modifier states to OLEDs
+void write_mod_state(
+    uint16_t *mod_state,
+    uint16_t mod_mask,
+    char mod_indicator,
+    uint8_t x,
+    uint8_t y
+) {
+    static char modstr[] = " ";
+    oled_set_cursor(x, y);
+    modstr[0] = *mod_state & mod_mask ? mod_indicator : ' ';
+    oled_write(modstr, false);
 }
-
-bool is_oneshot_cancel_key(uint16_t keycode) {
-    switch (keycode) {
-    case SFT_ESC:
-    // case NAV_ENT:
-    // case NUM_BSP:
-        return true;
-    default:
-        return false;
-    }
-}
-
-bool is_oneshot_ignored_key(uint16_t keycode) {
-    switch (keycode) {
-    case NAV_ENT:
-    case SYM_SPC:
-    // case NUM_BSP:
-    case KC_LSFT:
-    case KC_RSFT:
-    case OS_SHFT:
-    case OS_CTRL:
-    case OS_ALT:
-    case OS_GUI:
-        return true;
-    default:
-        return false;
-    }
-}
-
-
 /* The default OLED and rotary encoder code can be found at the bottom of qmk_firmware/keyboards/splitkb/kyria/rev1/rev1.c
  * These default settings can be overriden by your own settings in your keymap.c
  * For your convenience, here's a copy of those settings so that you can uncomment them if you wish to apply your own modifications.
@@ -402,9 +408,11 @@ bool is_oneshot_ignored_key(uint16_t keycode) {
 
 #ifdef OLED_ENABLE
 oled_rotation_t oled_init_user(oled_rotation_t rotation) { return OLED_ROTATION_180; }
-
+static uint16_t mod_state = 0;
 bool oled_task_user(void) {
     if (is_keyboard_master()) {
+        // *** Host Keyboard States ***
+        // Define layer image
         static const char PROGMEM layer_image[2][16] = {
             // 'layers', 16x16px
             {
@@ -414,46 +422,12 @@ bool oled_task_user(void) {
                 0x00, 0x09, 0x16, 0x24, 0x49, 0x92, 0x92, 0x49, 0x49, 0x24, 0x24, 0x12, 0x12, 0x09, 0x0b, 0x04,
             },
         };
-        static const char PROGMEM encoder_image[2][16] = {
-            // 'encoder', 16x16px
-            {
-                0x00, 0x00, 0x00, 0x00, 0xe0, 0x50, 0xd0, 0x88, 0x88, 0x88, 0xd0, 0x50, 0xe0, 0x00, 0x00, 0x00,
-            },
-            {
-                0x00, 0x00, 0x00, 0x20, 0x53, 0x55, 0x86, 0xbd, 0xba, 0xbd, 0x86, 0x55, 0x53, 0x20, 0x00, 0x00
-            },
-        };
         // Write layer image
         oled_set_cursor(0, 0);
         oled_write_raw_P(layer_image[0], sizeof(layer_image[0]));
         oled_advance_page(false);
         oled_write_raw_P(layer_image[1], sizeof(layer_image[1]));
-        // Write left encoder image
-        oled_set_cursor(0, 2);
-        oled_write_raw_P(encoder_image[0], sizeof(encoder_image[0]));
-        oled_advance_page(false);
-        oled_write_raw_P(encoder_image[1], sizeof(encoder_image[1]));
-        int8_t x = 17;
-        int8_t y = 24;
-        oled_write_pixel(x+2, y,   true);
-        oled_write_pixel(x+1, y+1, true);
-        oled_write_pixel(x,   y+2, true);
-        oled_write_pixel(x+1, y+3, true);
-        oled_write_pixel(x+2, y+4, true);
-        // Write right encoder image
-        oled_set_cursor(0, 4);
-        oled_write_raw_P(encoder_image[0], sizeof(encoder_image[0]));
-        oled_advance_page(false);
-        oled_write_raw_P(encoder_image[1], sizeof(encoder_image[1]));
-        x = 18;
-        y = 40;
-        oled_write_pixel(x,   y,   true);
-        oled_write_pixel(x+1, y+1, true);
-        oled_write_pixel(x+2, y+2, true);
-        oled_write_pixel(x+1, y+3, true);
-        oled_write_pixel(x,   y+4, true);
-
-        // Host Keyboard Layer Status
+        // Write host keyboard layer state to OLEDs
         oled_set_cursor(4, 1);
         switch (get_highest_layer(layer_state|default_layer_state)) {
             case _QWERTY:
@@ -473,7 +447,42 @@ bool oled_task_user(void) {
         }
 
         #ifdef ENCODER_ENABLE
-        // Host Keyboard Left Rotary Encoder Status
+        // Define encoder image
+        static const char PROGMEM encoder_image[2][16] = {
+            // 'encoder', 16x16px
+            {
+                0x00, 0x00, 0x00, 0x00, 0xe0, 0x50, 0xd0, 0x88, 0x88, 0x88, 0xd0, 0x50, 0xe0, 0x00, 0x00, 0x00,
+            },
+            {
+                0x00, 0x00, 0x00, 0x20, 0x53, 0x55, 0x86, 0xbd, 0xba, 0xbd, 0x86, 0x55, 0x53, 0x20, 0x00, 0x00
+            },
+        };
+
+        // Write left encoder image to OLEDs
+        oled_set_cursor(0, 2);
+        oled_write_raw_P(encoder_image[0], sizeof(encoder_image[0]));
+        oled_advance_page(false);
+        oled_write_raw_P(encoder_image[1], sizeof(encoder_image[1]));
+        int8_t x = 17;
+        int8_t y = 24;
+        oled_write_pixel(x+2, y,   true);
+        oled_write_pixel(x+1, y+1, true);
+        oled_write_pixel(x,   y+2, true);
+        oled_write_pixel(x+1, y+3, true);
+        oled_write_pixel(x+2, y+4, true);
+        // Write right encoder image to OLEDs
+        oled_set_cursor(0, 4);
+        oled_write_raw_P(encoder_image[0], sizeof(encoder_image[0]));
+        oled_advance_page(false);
+        oled_write_raw_P(encoder_image[1], sizeof(encoder_image[1]));
+        x = 18;
+        y = 40;
+        oled_write_pixel(x,   y,   true);
+        oled_write_pixel(x+1, y+1, true);
+        oled_write_pixel(x+2, y+2, true);
+        oled_write_pixel(x+1, y+3, true);
+        oled_write_pixel(x,   y+4, true);
+        // Write left rotary encoder state to OLEDs
         oled_set_cursor(4, 3);
         switch (left_encoder_state) {
             case _RE_MEDIA:
@@ -485,7 +494,7 @@ bool oled_task_user(void) {
             default:
                 oled_write_P(PSTR("Undefined\n"), false);
         }
-        // Host Keyboard Right Rotary Encoder Status
+        // Write right rotary encoder state to OLEDs
         oled_set_cursor(4, 5);
         switch (right_encoder_state) {
             case _RE_SCROLL:
@@ -499,7 +508,14 @@ bool oled_task_user(void) {
         }
         #endif
 
-        // Write host Keyboard LED Status to OLEDs
+        // Write mod status to OLEDs
+        mod_state = get_mods();
+        write_mod_state(&mod_state, MOD_BIT(KC_LSFT), 0x18, 16, 2);
+        write_mod_state(&mod_state, MOD_BIT(KC_LCTL), 0x5E, 18, 2);
+        write_mod_state(&mod_state, MOD_BIT(KC_LALT), 0x25, 16, 4);
+        write_mod_state(&mod_state, MOD_BIT(KC_LGUI), 0x04, 18, 4);
+
+        // Write host keyboard LED state to OLEDs
         oled_set_cursor(0, 7);
         led_t led_usb_state = host_keyboard_led_state();
         oled_write_P(led_usb_state.num_lock    ? PSTR("NUMLCK ") : PSTR("       "), false);

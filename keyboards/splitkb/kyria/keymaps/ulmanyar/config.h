@@ -16,10 +16,6 @@
 
 #pragma once
 
-#define BOTH_SHIFTS_TURNS_ON_CAPS_WORD
-
-// #define SPLIT_LAYER_STATE_ENABLE
-
 #ifdef TAP_DANCE_ENABLE
 #    define TAPPING_TERM 125
 #    define TAPPING_TERM_PER_KEY
