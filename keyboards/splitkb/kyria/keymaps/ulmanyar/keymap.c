@@ -296,7 +296,6 @@ bool is_oneshot_cancel_key(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
     // Separate tap/hold for all layer/mod tap keys
     case SFT_ESC:
-    case SYM_SPC:
     case NAV_ENT:
     case NUM_BSP:
         if (record->tap.count > 0) {
@@ -315,7 +314,6 @@ bool is_oneshot_ignored_key(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
     // Separate tap/hold for all layer/mod tap keys
     case SFT_ESC:
-    case SYM_SPC:
     case NAV_ENT:
     case NUM_BSP:
         if (record->tap.count > 0) {
