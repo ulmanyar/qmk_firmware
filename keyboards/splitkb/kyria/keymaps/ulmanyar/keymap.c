@@ -20,6 +20,7 @@
 
 enum layers {
     _QWERTY = 0,
+    _COLEMAK_DH,
     _NAV,
     _NUM,
     _SYM,
@@ -46,7 +47,10 @@ enum custom_keycodes {
     L_RE_ST = SAFE_RANGE,
     R_RE_ST,
 
+    DL_TOGG,
+
     SW_WIN,
+    SW_TAB,
 
     OS_SHFT,
     OS_CTRL,
@@ -174,8 +178,6 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 };
 
 // Aliases for readability
-#define SYM      MO(_SYM)
-
 // Layer-tap
 #define NAV_ENT  LT(_NAV, KC_ENT)
 #define SYM_SPC  LT(_SYM, KC_SPC)
@@ -223,11 +225,19 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
                                 L_RE_TAP, _______, NAV_ENT, SFT_ESC, _______, _______, SYM_SPC, NUM_BSP, _______,R_RE_TAP
     ),
 
+    [_COLEMAK_DH] = LAYOUT(
+    // Missing: *LCK, RAlt
+      XXXXXXX,  SE_Q  ,  SE_W  ,  SE_F  ,   SE_P ,   SE_B ,                                      SE_J  ,  SE_L  ,  SE_U  ,  SE_Y  ,SE_ODIA , XXXXXXX,
+      XXXXXXX,  SE_A  ,  SE_R  ,  SE_S  ,   SE_T ,   SE_G ,                                      SE_M  ,  SE_N  ,  SE_E  ,  SE_I  ,  SE_O  , XXXXXXX,
+      XXXXXXX,  SE_Z  ,  SE_X  ,  SE_C  ,   SE_D ,   SE_V , _______, _______, _______, _______,  SE_K  ,  SE_H  ,SE_COMM , SE_DOT ,SE_MINS , XXXXXXX,
+                                L_RE_TAP, _______, NAV_ENT, SFT_ESC, _______, _______, SYM_SPC, NUM_BSP, _______,R_RE_TAP
+    ),
+
     [_NAV] = LAYOUT(
     // Missing: Media buttons, *LCK
-      _______, SW_WIN , _______, _______, KC_LGUI, _______,                                     KC_PGUP, KC_HOME, KC_UP  , KC_END , SE_ARNG, _______,
-      _______, OS_GUI , OS_ALT , OS_CTRL, OS_SHFT,A(KC_F4),                                     KC_PGDN, KC_LEFT, KC_DOWN, KC_RGHT, SE_ADIA, _______,
-      _______,VD_CLOSE, VD_LEFT,VD_RIGHT, VD_NEW , _______, _______, _______, _______, _______, KC_PSCR, KC_TAB , _______, KC_INS , KC_SLEP, _______,
+      _______, SW_WIN , SW_TAB , _______, KC_LGUI, KC_SLEP,                                     KC_HOME, KC_PGDN, KC_PGUP, KC_END , SE_ARNG, _______,
+      _______, OS_GUI , OS_ALT , OS_CTRL, OS_SHFT,A(KC_F4),                                     KC_LEFT, KC_DOWN, KC_UP  , KC_RGHT, SE_ADIA, _______,
+      _______,VD_CLOSE, VD_LEFT,VD_RIGHT, VD_NEW , DL_TOGG, _______, _______, _______, _______, KC_PSCR, KC_TAB , _______, KC_INS , _______, _______,
                                  _______, _______, _______, _______, _______, _______, KC_DEL , KC_BSPC, _______, _______
 
     ),
@@ -244,7 +254,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       _______, SE_ACUT, SE_GRV , SE_CIRC, SE_TILD, SE_DIAE,                                     SE_QUOT, SE_BSLS, SE_LABK, SE_RABK, SE_PLUS, _______,
       _______, SE_EXLM, SE_DQUO, SE_HASH, SE_CURR, SE_PERC,                                     SE_AMPR, SE_SLSH, SE_LPRN, SE_RPRN, SE_EQL , _______,
       _______, SE_QUES, SE_AT  , SE_PND , SE_DLR , SE_PIPE, _______, _______, _______, _______, SE_ASTR, SE_LCBR, SE_LBRC, SE_RBRC, SE_RCBR, _______,
-                                 _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
+                                 _______, _______, _______, KC_CAPS, _______, _______, _______, _______, _______, _______
     ),
 
 // /*
@@ -329,16 +339,23 @@ bool is_oneshot_ignored_key(uint16_t keycode, keyrecord_t *record) {
 }
 
 bool swap_windows_active = false;
+bool swap_tabs_active = false;
 
 oneshot_state os_shft_state = os_up_unqueued;
 oneshot_state os_ctrl_state = os_up_unqueued;
 oneshot_state os_alt_state = os_up_unqueued;
 oneshot_state os_cmd_state = os_up_unqueued;
 
+
 // User level override of process_record, used to define macros etc.
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     update_swapper(
         &swap_windows_active, KC_LALT, KC_TAB, SW_WIN,
+        keycode, record
+    );
+
+    update_swapper(
+        &swap_tabs_active, KC_LCTL, KC_TAB, SW_TAB,
         keycode, record
     );
 
@@ -362,6 +379,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
     #ifdef ENCODER_ENABLE
     switch (keycode) {
+        case DL_TOGG:
+            if (record->event.pressed) {
+                set_single_persistent_default_layer(_QWERTY + _COLEMAK_DH - get_highest_layer(default_layer_state));
+            }
+            return false;
         case L_RE_ST:
             // Modify functionality of left rotary encoder
             if (record->event.pressed) {
@@ -432,6 +454,9 @@ bool oled_task_user(void) {
         switch (get_highest_layer(layer_state|default_layer_state)) {
             case _QWERTY:
                 oled_write_P(PSTR("QWERTY\n"), false);
+                break;
+            case _COLEMAK_DH:
+                oled_write_P(PSTR("Colemak DH\n"), false);
                 break;
             case _NAV:
                 oled_write_P(PSTR("Navigation\n"), false);
