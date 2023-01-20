@@ -214,6 +214,7 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
 bool get_retro_tapping(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case NAV_ENT:
+        case SFT_ESC:
             return false;
         default:
             return true;
