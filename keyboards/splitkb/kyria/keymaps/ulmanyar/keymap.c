@@ -41,21 +41,6 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 #endif // ENCODER_ENABLE
 
 
-// Aliases for readability
-// Layer-tap
-#define NAV_ENT  LT(_NAV, KC_ENT)
-#define SYM_SPC  LT(_SYM, KC_SPC)
-#define NUM_BSP  LT(_NUM, KC_BSPC)
-
-// Mod-tap
-#define SFT_ESC  MT(MOD_LSFT, KC_ESC)
-
-// Windows Virtual Desktop Navigation
-#define VD_NEW   G(C(SE_D))
-#define VD_CLOSE G(C(KC_F4))
-#define VD_LEFT  G(C(KC_LEFT))
-#define VD_RIGHT G(C(KC_RIGHT))
-
 // Custom tapping terms
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
@@ -146,62 +131,6 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 //     ),
 };
 // clang-format on
-
-// *** Callum mods and (modified) swapper support code ***
-bool is_swapper_ignored_key(uint16_t keycode) {
-    switch (keycode) {
-    case KC_LSFT:
-    case KC_RSFT:
-    case OS_SHFT:
-        return true;
-    default:
-        return false;
-    }
-}
-
-bool is_oneshot_cancel_key(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-    // Separate tap/hold for all layer/mod tap keys
-    case SFT_ESC:
-    case NAV_ENT:
-    case NUM_BSP:
-        if (record->tap.count > 0) {
-            // Process taps
-            return false;
-        } else {
-            // Cancel on hold
-            return true;
-        }
-    default:
-        return false;
-    }
-}
-
-bool is_oneshot_ignored_key(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-    // Separate tap/hold for all layer/mod tap keys
-    case SFT_ESC:
-    case NAV_ENT:
-    case NUM_BSP:
-        if (record->tap.count > 0) {
-            // Process taps
-            return false;
-        } else {
-            // Ignore holds
-            return true;
-        }
-    // Ignore mods
-    case KC_LSFT:
-    case KC_RSFT:
-    case OS_SHFT:
-    case OS_CTRL:
-    case OS_ALT:
-    case OS_GUI:
-        return true;
-    default:
-        return false;
-    }
-}
 
 bool swap_windows_active = false;
 bool swap_tabs_active = false;

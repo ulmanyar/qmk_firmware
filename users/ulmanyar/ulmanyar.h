@@ -40,6 +40,21 @@ enum custom_keycodes {
     OS_GUI,
 };
 
+// Aliases for readability
+// Layer-tap
+#define NAV_ENT  LT(_NAV, KC_ENT)
+#define SYM_SPC  LT(_SYM, KC_SPC)
+#define NUM_BSP  LT(_NUM, KC_BSPC)
+
+// Mod-tap
+#define SFT_ESC  MT(MOD_LSFT, KC_ESC)
+
+// Windows Virtual Desktop Navigation
+#define VD_NEW   G(C(SE_D))
+#define VD_CLOSE G(C(KC_F4))
+#define VD_LEFT  G(C(KC_LEFT))
+#define VD_RIGHT G(C(KC_RIGHT))
+
 
 void oled_write_encoder_state(enum encoder_states current_state);
 

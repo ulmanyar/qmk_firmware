@@ -90,3 +90,59 @@ void encoder_functions(enum encoder_states current_state, bool clockwise) {
             break;
     }
 }
+
+// *** Callum mods and (modified) swapper support code ***
+bool is_swapper_ignored_key(uint16_t keycode) {
+    switch (keycode) {
+    case KC_LSFT:
+    case KC_RSFT:
+    case OS_SHFT:
+        return true;
+    default:
+        return false;
+    }
+}
+
+bool is_oneshot_cancel_key(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+    // Separate tap/hold for all layer/mod tap keys
+    case SFT_ESC:
+    case NAV_ENT:
+    case NUM_BSP:
+        if (record->tap.count > 0) {
+            // Process taps
+            return false;
+        } else {
+            // Cancel on hold
+            return true;
+        }
+    default:
+        return false;
+    }
+}
+
+bool is_oneshot_ignored_key(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+    // Separate tap/hold for all layer/mod tap keys
+    case SFT_ESC:
+    case NAV_ENT:
+    case NUM_BSP:
+        if (record->tap.count > 0) {
+            // Process taps
+            return false;
+        } else {
+            // Ignore holds
+            return true;
+        }
+    // Ignore mods
+    case KC_LSFT:
+    case KC_RSFT:
+    case OS_SHFT:
+    case OS_CTRL:
+    case OS_ALT:
+    case OS_GUI:
+        return true;
+    default:
+        return false;
+    }
+}
