@@ -22,7 +22,7 @@
 // NOTE: Modify all tap-dance, keymaps etc. when disabling encoders
 #ifdef ENCODER_ENABLE
 // Encoder states
-enum encoder_states lre_states[] = {_MEDIA, _TABSWITCH};
+enum encoder_states lre_states[] = {_VOLUME, _TABSWITCH};
 size_t number_of_lre_states = sizeof(lre_states) / sizeof(lre_states[0]);
 uint8_t current_lre_state = 0;
 
@@ -38,7 +38,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 
     if (index == 0) {
         switch (lre_states[current_lre_state]) {
-            case _MEDIA:
+            case _VOLUME:
                 // Volume control
                 if (clockwise) {
                     tap_code(KC_VOLU);
@@ -427,28 +427,30 @@ bool oled_task_user(void) {
         oled_write_pixel(x,   y+4, true);
         // Write left rotary encoder state to OLEDs
         oled_set_cursor(4, 3);
-        switch (lre_states[current_lre_state]) {
-            case _MEDIA:
-                oled_write_P(PSTR("Volume\n"), false);
-                break;
-            case _TABSWITCH:
-                oled_write_P(PSTR("Tabs\n"), false);
-                break;
-            default:
-                oled_write_P(PSTR("Undefined\n"), false);
-        }
+        oled_write_encoder_state(lre_states[current_lre_state]);
+        // switch (lre_states[current_lre_state]) {
+        //     case _VOLUME:
+        //         oled_write_P(PSTR("Volume\n"), false);
+        //         break;
+        //     case _TABSWITCH:
+        //         oled_write_P(PSTR("Tabs\n"), false);
+        //         break;
+        //     default:
+        //         oled_write_P(PSTR("Undefined\n"), false);
+        // }
         // Write right rotary encoder state to OLEDs
         oled_set_cursor(4, 5);
-        switch (rre_states[current_rre_state]) {
-            case _ARROWSCROLL:
-                oled_write_P(PSTR("Scroll\n"), false);
-                break;
-            case _WORDCURSOR:
-                oled_write_P(PSTR("Cursor\n"), false);
-                break;
-            default:
-                oled_write_P(PSTR("Undefined\n"), false);
-        }
+        oled_write_encoder_state(rre_states[current_rre_state]);
+        // switch (rre_states[current_rre_state]) {
+        //     case _ARROWSCROLL:
+        //         oled_write_P(PSTR("Scroll\n"), false);
+        //         break;
+        //     case _WORDCURSOR:
+        //         oled_write_P(PSTR("Cursor\n"), false);
+        //         break;
+        //     default:
+        //         oled_write_P(PSTR("Undefined\n"), false);
+        // }
         #endif
 
         // Write mod status to OLEDs

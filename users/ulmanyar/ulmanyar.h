@@ -14,7 +14,7 @@ enum layers {
 };
 
 enum encoder_states {
-    _MEDIA,
+    _VOLUME = 0,
     _TABSWITCH,
     _WINSWITCH,
     _ARROWSCROLL,
@@ -36,3 +36,6 @@ enum custom_keycodes {
     OS_ALT,
     OS_GUI,
 };
+
+
+void oled_write_encoder_state(enum encoder_states current_state);
