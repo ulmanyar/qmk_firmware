@@ -22,74 +22,19 @@
 // NOTE: Modify all tap-dance, keymaps etc. when disabling encoders
 #ifdef ENCODER_ENABLE
 // Encoder states
-enum encoder_states lre_states[] = {_VOLUME, _TABSWITCH};
-size_t number_of_lre_states = sizeof(lre_states) / sizeof(lre_states[0]);
-uint8_t current_lre_state = 0;
+static enum encoder_states lre_states[] = {_TABSWITCH, _VOLUME};
+static size_t number_of_lre_states = sizeof(lre_states) / sizeof(lre_states[0]);
+static uint8_t current_lre_state = 0;
 
-enum encoder_states rre_states[] = {_ARROWSCROLL, _WORDCURSOR};
-size_t number_of_rre_states = sizeof(rre_states) / sizeof(rre_states[0]);
-uint8_t current_rre_state = 0;
-
-// Timer for accelerated scrolling
-static uint16_t scroll_timer = 0;
-static uint8_t scroll_step_size = 1;
+static enum encoder_states rre_states[] = {_ARROWSCROLL, _WORDCURSOR};
+static size_t number_of_rre_states = sizeof(rre_states) / sizeof(rre_states[0]);
+static uint8_t current_rre_state = 0;
 
 bool encoder_update_user(uint8_t index, bool clockwise) {
-
     if (index == 0) {
-        switch (lre_states[current_lre_state]) {
-            case _VOLUME:
-                // Volume control
-                if (clockwise) {
-                    tap_code(KC_VOLU);
-                } else {
-                    tap_code(KC_VOLD);
-                }
-                break;
-            case _TABSWITCH:
-                // Switch tabs using Ctrl-Tab
-                if (clockwise) {
-                    tap_code16(C(KC_TAB));
-                } else {
-                    tap_code16(S(C(KC_TAB)));
-                }
-                break;
-            default:
-                break;
-        }
+        encoder_functions(lre_states[current_lre_state], clockwise);
     } else if (index == 1) {
-        switch (rre_states[current_rre_state]) {
-            case _WORDCURSOR:
-                // Move cursor one word to the left/right
-                if (clockwise) {
-                    tap_code16(C(KC_RGHT));
-                } else {
-                    tap_code16(C(KC_LEFT));
-                }
-                break;
-            case _ARROWSCROLL:
-                // Scroll up/down with accelerated speed
-                if (timer_elapsed(scroll_timer) < ACCSCROLL_REPEAT_INTERVAL) {
-                    scroll_step_size += ACCSCROLL_STEP_SIZE;
-                    scroll_step_size = (scroll_step_size > ACCSCROLL_MAX_STEP) ? ACCSCROLL_MAX_STEP : scroll_step_size;
-                } else {
-                    scroll_step_size = 1;
-                }
-                scroll_timer = timer_read();
-
-                if (clockwise) {
-                    for (uint8_t i = 0; i < scroll_step_size; i++) {
-                        tap_code(KC_DOWN);
-                    }
-                } else {
-                    for (uint8_t i = 0; i < scroll_step_size; i++) {
-                        tap_code(KC_UP);
-                    }
-                }
-                break;
-            default:
-                break;
-        }
+        encoder_functions(rre_states[current_rre_state], clockwise);
     }
     return false;
 }
@@ -428,29 +373,9 @@ bool oled_task_user(void) {
         // Write left rotary encoder state to OLEDs
         oled_set_cursor(4, 3);
         oled_write_encoder_state(lre_states[current_lre_state]);
-        // switch (lre_states[current_lre_state]) {
-        //     case _VOLUME:
-        //         oled_write_P(PSTR("Volume\n"), false);
-        //         break;
-        //     case _TABSWITCH:
-        //         oled_write_P(PSTR("Tabs\n"), false);
-        //         break;
-        //     default:
-        //         oled_write_P(PSTR("Undefined\n"), false);
-        // }
         // Write right rotary encoder state to OLEDs
         oled_set_cursor(4, 5);
         oled_write_encoder_state(rre_states[current_rre_state]);
-        // switch (rre_states[current_rre_state]) {
-        //     case _ARROWSCROLL:
-        //         oled_write_P(PSTR("Scroll\n"), false);
-        //         break;
-        //     case _WORDCURSOR:
-        //         oled_write_P(PSTR("Cursor\n"), false);
-        //         break;
-        //     default:
-        //         oled_write_P(PSTR("Undefined\n"), false);
-        // }
         #endif
 
         // Write mod status to OLEDs

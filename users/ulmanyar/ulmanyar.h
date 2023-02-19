@@ -2,6 +2,9 @@
 #pragma once
 #include QMK_KEYBOARD_H
 
+#define ACCSCROLL_MAX_STEP 18
+#define ACCSCROLL_STEP_SIZE 3
+#define ACCSCROLL_REPEAT_INTERVAL 75
 
 enum layers {
     _QWERTY = 0,
@@ -39,3 +42,5 @@ enum custom_keycodes {
 
 
 void oled_write_encoder_state(enum encoder_states current_state);
+
+void encoder_functions(enum encoder_states current_state, bool clockwise);
