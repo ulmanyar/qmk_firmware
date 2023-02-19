@@ -1,5 +1,49 @@
 #include "ulmanyar.h"
 
+// Utility function to write modifier states to OLEDs
+void write_mod_state(
+    uint16_t *mod_state,
+    uint16_t mod_mask,
+    char mod_indicator,
+    uint8_t x,
+    uint8_t y
+) {
+    static char modstr[] = " ";
+    oled_set_cursor(x, y);
+    modstr[0] = *mod_state & mod_mask ? mod_indicator : ' ';
+    oled_write(modstr, false);
+}
+
+
+void oled_write_layer_state() {
+    switch (get_highest_layer(layer_state|default_layer_state)) {
+        case _QWERTY:
+            oled_write_P(PSTR("QWERTY\n"), false);
+            break;
+        case _COLEMAK_DH:
+            oled_write_P(PSTR("Colemak DH\n"), false);
+            break;
+        case _NAV:
+            oled_write_P(PSTR("Navigation\n"), false);
+            break;
+        case _NUM:
+            oled_write_P(PSTR("Numbers\n"), false);
+            break;
+        case _SYM:
+            oled_write_P(PSTR("Symbols\n"), false);
+            break;
+        case _MED:
+            oled_write_P(PSTR("Media\n"), false);
+            break;
+        case _RGB:
+            oled_write_P(PSTR("RGB\n"), false);
+            break;
+        default:
+            oled_write_P(PSTR("Undefined\n"), false);
+    }
+}
+
+// Utility function to write encoder state to current position
 void oled_write_encoder_state(enum encoder_states current_state) {
     switch (current_state) {
         case _VOLUME:
@@ -21,9 +65,10 @@ void oled_write_encoder_state(enum encoder_states current_state) {
         default:
             oled_write_P(PSTR("Undefined\n"), false);
     }
-};
+}
 
 
+// Utility function to execute encoder functionality based on encoder_states
 void encoder_functions(enum encoder_states current_state, bool clockwise) {
     // Timer for accelerated scrolling
     static uint16_t scroll_timer = 0;
@@ -90,6 +135,7 @@ void encoder_functions(enum encoder_states current_state, bool clockwise) {
             break;
     }
 }
+
 
 // *** Callum mods and (modified) swapper support code ***
 bool is_swapper_ignored_key(uint16_t keycode) {

@@ -1,6 +1,7 @@
 
 #pragma once
 #include QMK_KEYBOARD_H
+#include "keymap_swedish.h"
 
 #define ACCSCROLL_MAX_STEP 18
 #define ACCSCROLL_STEP_SIZE 3
@@ -55,6 +56,15 @@ enum custom_keycodes {
 #define VD_LEFT  G(C(KC_LEFT))
 #define VD_RIGHT G(C(KC_RIGHT))
 
+void write_mod_state(
+    uint16_t *mod_state,
+    uint16_t mod_mask,
+    char mod_indicator,
+    uint8_t x,
+    uint8_t y
+);
+
+void oled_write_layer_state(void);
 
 void oled_write_encoder_state(enum encoder_states current_state);
 

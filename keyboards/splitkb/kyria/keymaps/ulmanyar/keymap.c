@@ -73,16 +73,20 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // Missing: *LCK, RAlt
       XXXXXXX,  SE_Q  ,  SE_W  ,  SE_E  ,  SE_R  ,  SE_T  ,                                      SE_Y  ,  SE_U  ,  SE_I  ,  SE_O  ,  SE_P  , XXXXXXX,
       XXXXXXX,  SE_A  ,  SE_S  ,  SE_D  ,  SE_F  ,  SE_G  ,                                      SE_H  ,  SE_J  ,  SE_K  ,  SE_L  ,SE_ODIA , XXXXXXX,
-      XXXXXXX,  SE_Z  ,  SE_X  ,  SE_C  ,  SE_V  ,  SE_B  , _______, _______, _______, _______,  SE_N  ,  SE_M  ,SE_COMM , SE_DOT ,SE_MINS , XXXXXXX,
-                                L_RE_ST , _______, NAV_ENT, SFT_ESC, _______, _______, SYM_SPC, NUM_BSP, _______,R_RE_ST
+      XXXXXXX,  SE_Z  ,  SE_X  ,  SE_C  ,  SE_V  ,  SE_B  , XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  SE_N  ,  SE_M  ,SE_COMM , SE_DOT ,SE_MINS , XXXXXXX,
+                                L_RE_ST , XXXXXXX, NAV_ENT, SFT_ESC, XXXXXXX, XXXXXXX, SYM_SPC, NUM_BSP, XXXXXXX,R_RE_ST
     ),
 
     [_COLEMAK_DH] = LAYOUT(
     // Missing: *LCK, RAlt
       XXXXXXX,  SE_Q  ,  SE_W  ,  SE_F  ,   SE_P ,   SE_B ,                                      SE_J  ,  SE_L  ,  SE_U  ,  SE_Y  ,SE_ODIA , XXXXXXX,
       XXXXXXX,  SE_A  ,  SE_R  ,  SE_S  ,   SE_T ,   SE_G ,                                      SE_M  ,  SE_N  ,  SE_E  ,  SE_I  ,  SE_O  , XXXXXXX,
-      XXXXXXX,  SE_Z  ,  SE_X  ,  SE_C  ,   SE_D ,   SE_V , _______, _______, _______, _______,  SE_K  ,  SE_H  ,SE_COMM , SE_DOT ,SE_MINS , XXXXXXX,
-                                L_RE_ST , _______, NAV_ENT, SFT_ESC, _______, _______, SYM_SPC, NUM_BSP, _______,R_RE_ST
+      XXXXXXX,  SE_Z  ,  SE_X  ,  SE_C  ,   SE_D ,   SE_V , XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  SE_K  ,  SE_H  ,SE_COMM , SE_DOT ,SE_MINS , XXXXXXX,
+#ifdef ENCODER_ENABLE
+                                L_RE_ST , XXXXXXX, NAV_ENT, SFT_ESC, XXXXXXX, XXXXXXX, SYM_SPC, NUM_BSP, XXXXXXX,R_RE_ST
+#else
+                                XXXXXXX , XXXXXXX, NAV_ENT, SFT_ESC, XXXXXXX, XXXXXXX, SYM_SPC, NUM_BSP, XXXXXXX,XXXXXXX
+#endif // ENCODER_ENABLE
     ),
 
     [_NAV] = LAYOUT(
@@ -178,6 +182,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             }
             return false;
         case L_RE_ST:
+            #ifdef ENCODER_ENABLE
             // Modify functionality of left rotary encoder
             if (record->event.pressed) {
                 // when keycode L_RE_ST is pressed
@@ -185,6 +190,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             } else {
                 // when keycode L_RE_ST is released
             }
+            #endif // ENCODER_ENABLE
             break;
         case R_RE_ST:
             // Modify functionality of right rotary encoder
@@ -201,19 +207,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     return true;
 };
 
-// Utility function to write modifier states to OLEDs
-void write_mod_state(
-    uint16_t *mod_state,
-    uint16_t mod_mask,
-    char mod_indicator,
-    uint8_t x,
-    uint8_t y
-) {
-    static char modstr[] = " ";
-    oled_set_cursor(x, y);
-    modstr[0] = *mod_state & mod_mask ? mod_indicator : ' ';
-    oled_write(modstr, false);
-}
 /* The default OLED and rotary encoder code can be found at the bottom of qmk_firmware/keyboards/splitkb/kyria/rev1/rev1.c
  * These default settings can be overriden by your own settings in your keymap.c
  * For your convenience, here's a copy of those settings so that you can uncomment them if you wish to apply your own modifications.
@@ -243,25 +236,7 @@ bool oled_task_user(void) {
         oled_write_raw_P(layer_image[1], sizeof(layer_image[1]));
         // Write host keyboard layer state to OLEDs
         oled_set_cursor(4, 1);
-        switch (get_highest_layer(layer_state|default_layer_state)) {
-            case _QWERTY:
-                oled_write_P(PSTR("QWERTY\n"), false);
-                break;
-            case _COLEMAK_DH:
-                oled_write_P(PSTR("Colemak DH\n"), false);
-                break;
-            case _NAV:
-                oled_write_P(PSTR("Navigation\n"), false);
-                break;
-            case _NUM:
-                oled_write_P(PSTR("Numbers\n"), false);
-                break;
-            case _SYM:
-                oled_write_P(PSTR("Symbols\n"), false);
-                break;
-            default:
-                oled_write_P(PSTR("Undefined\n"), false);
-        }
+        oled_write_layer_state();
 
         #ifdef ENCODER_ENABLE
         // Define encoder image
@@ -305,7 +280,7 @@ bool oled_task_user(void) {
         // Write right rotary encoder state to OLEDs
         oled_set_cursor(4, 5);
         oled_write_encoder_state(rre_states[current_rre_state]);
-        #endif
+        #endif // ENCODER_ENABLE
 
         // Write mod status to OLEDs
         mod_state = get_mods();
