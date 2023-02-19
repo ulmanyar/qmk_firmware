@@ -15,89 +15,20 @@
  */
 #include QMK_KEYBOARD_H
 #include "keymap_swedish.h"
+#include "ulmanyar.h"
 #include "oneshot.h"
 #include "swapper.h"
-
-enum layers {
-    _QWERTY = 0,
-    _COLEMAK_DH,
-    _NAV,
-    _NUM,
-    _SYM,
-};
 
 // NOTE: Modify all tap-dance, keymaps etc. when disabling encoders
 #ifdef ENCODER_ENABLE
 // Encoder states
-enum left_encoder_states {
-    _RE_MEDIA,
-    _RE_TABSWITCH,
-    _NUMBER_OF_LRE_STATES,
-};
-enum left_encoder_states left_encoder_state = _RE_TABSWITCH;
+enum encoder_states lre_states[] = {_MEDIA, _TABSWITCH};
+size_t number_of_lre_states = sizeof(lre_states) / sizeof(lre_states[0]);
+uint8_t current_lre_state = 0;
 
-enum right_encoder_states {
-    _RE_SCROLL,
-    _RE_CURSOR,
-    _NUMBER_OF_RRE_STATES,
-};
-enum right_encoder_states right_encoder_state = _RE_SCROLL;
-
-enum custom_keycodes {
-    L_RE_ST = SAFE_RANGE,
-    R_RE_ST,
-
-    DL_TOGG,
-
-    SW_WIN,
-    SW_TAB,
-
-    OS_SHFT,
-    OS_CTRL,
-    OS_ALT,
-    OS_GUI,
-};
-
-// Used for tap-dance of left rotary encoder
-void dance_left_re(qk_tap_dance_state_t *state, void *user_data) {
-    if (state->count == 1) {
-        left_encoder_state = (left_encoder_state + 1) % _NUMBER_OF_LRE_STATES;
-    } else {
-        switch (left_encoder_state) {
-            case _RE_MEDIA:
-                // Mute
-                tap_code(KC_MUTE);
-                break;
-            case _RE_TABSWITCH:
-                // Close tab
-                tap_code16(C(SE_W));
-                break;
-            default:
-                break;
-        }
-    }
-    reset_tap_dance(state);
-}
-
-// Used for tap-dance of right rotary encoder
-void dance_right_re(qk_tap_dance_state_t *state, void *user_data) {
-    if (state->count == 1) {
-        right_encoder_state = (right_encoder_state + 1) % _NUMBER_OF_RRE_STATES;
-    } else {
-        switch (right_encoder_state) {
-            case _RE_SCROLL:
-                // TBD
-                break;
-            case _RE_CURSOR:
-                // Close window
-                tap_code16(A(KC_F4));
-                break;
-            default:
-                break;
-        }
-    }
-    reset_tap_dance(state);
-}
+enum encoder_states rre_states[] = {_ARROWSCROLL, _WORDCURSOR};
+size_t number_of_rre_states = sizeof(rre_states) / sizeof(rre_states[0]);
+uint8_t current_rre_state = 0;
 
 // Timer for accelerated scrolling
 static uint16_t scroll_timer = 0;
@@ -106,8 +37,8 @@ static uint8_t scroll_step_size = 1;
 bool encoder_update_user(uint8_t index, bool clockwise) {
 
     if (index == 0) {
-        switch (left_encoder_state) {
-            case _RE_MEDIA:
+        switch (lre_states[current_lre_state]) {
+            case _MEDIA:
                 // Volume control
                 if (clockwise) {
                     tap_code(KC_VOLU);
@@ -115,7 +46,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
                     tap_code(KC_VOLD);
                 }
                 break;
-            case _RE_TABSWITCH:
+            case _TABSWITCH:
                 // Switch tabs using Ctrl-Tab
                 if (clockwise) {
                     tap_code16(C(KC_TAB));
@@ -127,8 +58,8 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
                 break;
         }
     } else if (index == 1) {
-        switch (right_encoder_state) {
-            case _RE_CURSOR:
+        switch (rre_states[current_rre_state]) {
+            case _WORDCURSOR:
                 // Move cursor one word to the left/right
                 if (clockwise) {
                     tap_code16(C(KC_RGHT));
@@ -136,7 +67,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
                     tap_code16(C(KC_LEFT));
                 }
                 break;
-            case _RE_SCROLL:
+            case _ARROWSCROLL:
                 // Scroll up/down with accelerated speed
                 if (timer_elapsed(scroll_timer) < ACCSCROLL_REPEAT_INTERVAL) {
                     scroll_step_size += ACCSCROLL_STEP_SIZE;
@@ -164,18 +95,6 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 }
 #endif // ENCODER_ENABLE
 
-// Tap Dance declarations
-enum {
-    TD_LREM_LREF,
-    TD_RREM_RREF,
-};
-
-// Tap Dance definitions
-qk_tap_dance_action_t tap_dance_actions[] = {
-    // Tap once for function switching, twice for function execution
-    [TD_LREM_LREF] = ACTION_TAP_DANCE_FN(dance_left_re),
-    [TD_RREM_RREF] = ACTION_TAP_DANCE_FN(dance_right_re),
-};
 
 // Aliases for readability
 // Layer-tap
@@ -185,10 +104,6 @@ qk_tap_dance_action_t tap_dance_actions[] = {
 
 // Mod-tap
 #define SFT_ESC  MT(MOD_LSFT, KC_ESC)
-
-// Tap-dance
-#define L_RE_TAP TD(TD_LREM_LREF)
-#define R_RE_TAP TD(TD_RREM_RREF)
 
 // Windows Virtual Desktop Navigation
 #define VD_NEW   G(C(SE_D))
@@ -201,10 +116,6 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case SYM_SPC:
             return TAPPING_TERM + 25;
-        case R_RE_TAP:
-        case L_RE_TAP:
-            // Rotary encoders are slower to double-tap
-            return TAPPING_TERM + 250;
         default:
             return TAPPING_TERM;
     }
@@ -233,7 +144,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       XXXXXXX,  SE_Q  ,  SE_W  ,  SE_E  ,  SE_R  ,  SE_T  ,                                      SE_Y  ,  SE_U  ,  SE_I  ,  SE_O  ,  SE_P  , XXXXXXX,
       XXXXXXX,  SE_A  ,  SE_S  ,  SE_D  ,  SE_F  ,  SE_G  ,                                      SE_H  ,  SE_J  ,  SE_K  ,  SE_L  ,SE_ODIA , XXXXXXX,
       XXXXXXX,  SE_Z  ,  SE_X  ,  SE_C  ,  SE_V  ,  SE_B  , _______, _______, _______, _______,  SE_N  ,  SE_M  ,SE_COMM , SE_DOT ,SE_MINS , XXXXXXX,
-                                L_RE_TAP, _______, NAV_ENT, SFT_ESC, _______, _______, SYM_SPC, NUM_BSP, _______,R_RE_TAP
+                                L_RE_ST , _______, NAV_ENT, SFT_ESC, _______, _______, SYM_SPC, NUM_BSP, _______,R_RE_ST
     ),
 
     [_COLEMAK_DH] = LAYOUT(
@@ -241,7 +152,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       XXXXXXX,  SE_Q  ,  SE_W  ,  SE_F  ,   SE_P ,   SE_B ,                                      SE_J  ,  SE_L  ,  SE_U  ,  SE_Y  ,SE_ODIA , XXXXXXX,
       XXXXXXX,  SE_A  ,  SE_R  ,  SE_S  ,   SE_T ,   SE_G ,                                      SE_M  ,  SE_N  ,  SE_E  ,  SE_I  ,  SE_O  , XXXXXXX,
       XXXXXXX,  SE_Z  ,  SE_X  ,  SE_C  ,   SE_D ,   SE_V , _______, _______, _______, _______,  SE_K  ,  SE_H  ,SE_COMM , SE_DOT ,SE_MINS , XXXXXXX,
-                                L_RE_TAP, _______, NAV_ENT, SFT_ESC, _______, _______, SYM_SPC, NUM_BSP, _______,R_RE_TAP
+                                L_RE_ST , _______, NAV_ENT, SFT_ESC, _______, _______, SYM_SPC, NUM_BSP, _______,R_RE_ST
     ),
 
     [_NAV] = LAYOUT(
@@ -386,7 +297,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     );
 
 
-    #ifdef ENCODER_ENABLE
     switch (keycode) {
         case DL_TOGG:
             if (record->event.pressed) {
@@ -397,7 +307,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             // Modify functionality of left rotary encoder
             if (record->event.pressed) {
                 // when keycode L_RE_ST is pressed
-                left_encoder_state = (left_encoder_state + 1) % _NUMBER_OF_LRE_STATES;
+                current_lre_state = (current_lre_state + 1) % number_of_lre_states;
             } else {
                 // when keycode L_RE_ST is released
             }
@@ -406,7 +316,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             // Modify functionality of right rotary encoder
             if (record->event.pressed) {
                 // when keycode R_RE_ST is pressed
-                right_encoder_state = (right_encoder_state + 1) % _NUMBER_OF_RRE_STATES;
+                current_rre_state = (current_rre_state + 1) % number_of_rre_states;
             } else {
                 // when keycode R_RE_ST is released
             }
@@ -414,7 +324,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
         default:
             break;
     }
-    #endif // ENCODER_ENABLE
     return true;
 };
 
@@ -518,11 +427,11 @@ bool oled_task_user(void) {
         oled_write_pixel(x,   y+4, true);
         // Write left rotary encoder state to OLEDs
         oled_set_cursor(4, 3);
-        switch (left_encoder_state) {
-            case _RE_MEDIA:
+        switch (lre_states[current_lre_state]) {
+            case _MEDIA:
                 oled_write_P(PSTR("Volume\n"), false);
                 break;
-            case _RE_TABSWITCH:
+            case _TABSWITCH:
                 oled_write_P(PSTR("Tabs\n"), false);
                 break;
             default:
@@ -530,11 +439,11 @@ bool oled_task_user(void) {
         }
         // Write right rotary encoder state to OLEDs
         oled_set_cursor(4, 5);
-        switch (right_encoder_state) {
-            case _RE_SCROLL:
+        switch (rre_states[current_rre_state]) {
+            case _ARROWSCROLL:
                 oled_write_P(PSTR("Scroll\n"), false);
                 break;
-            case _RE_CURSOR:
+            case _WORDCURSOR:
                 oled_write_P(PSTR("Cursor\n"), false);
                 break;
             default:
