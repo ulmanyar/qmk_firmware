@@ -16,10 +16,8 @@
 
 #pragma once
 
-#ifdef TAP_DANCE_ENABLE
-#    define TAPPING_TERM 125
-#    define TAPPING_TERM_PER_KEY
-#endif
+#define TAPPING_TERM 125
+// #define TAPPING_TERM_PER_KEY
 
 #ifdef RGBLIGHT_ENABLE
 #    define RGBLIGHT_SLEEP           # Turn RGB underglow off when power off

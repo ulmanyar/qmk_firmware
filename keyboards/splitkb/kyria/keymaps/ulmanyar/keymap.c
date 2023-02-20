@@ -42,6 +42,7 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 
 
 // Custom tapping terms
+#ifdef TAPPING_TERM_PER_KEY
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
         case SYM_SPC:
@@ -50,6 +51,7 @@ uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
             return TAPPING_TERM;
     }
 }
+#endif // TAPPING_TERM_PER_KEY
 
 // Custom retro tapping
 bool get_retro_tapping(uint16_t keycode, keyrecord_t *record) {

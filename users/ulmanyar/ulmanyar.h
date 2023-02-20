@@ -29,6 +29,7 @@ enum encoder_states {
 enum custom_keycodes {
     L_RE_ST = SAFE_RANGE,
     R_RE_ST,
+    S_RE_ST,
 
     DL_TOGG,
 
