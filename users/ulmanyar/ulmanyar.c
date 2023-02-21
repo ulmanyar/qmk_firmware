@@ -117,9 +117,9 @@ void encoder_functions(enum encoder_states current_state, bool clockwise) {
         case _MOUSESCROLL:
             #ifdef MOUSEKEY_ENABLE
             if (clockwise) {
-                tap_code(KC_WH_D)
+                tap_code(KC_WH_D);
             } else {
-                tap_code(KC_WH_U)
+                tap_code(KC_WH_U);
             }
             #endif
             break;

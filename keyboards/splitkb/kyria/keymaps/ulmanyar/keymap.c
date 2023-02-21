@@ -76,7 +76,11 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       XXXXXXX,  SE_Q  ,  SE_W  ,  SE_E  ,  SE_R  ,  SE_T  ,                                      SE_Y  ,  SE_U  ,  SE_I  ,  SE_O  ,XXXXXXX , XXXXXXX,
       XXXXXXX,  SE_A  ,  SE_S  ,  SE_D  ,  SE_F  ,  SE_G  ,                                      SE_H  ,  SE_J  ,  SE_K  ,  SE_L  ,  SE_P  , XXXXXXX,
       XXXXXXX,  SE_Z  ,  SE_X  ,  SE_C  ,  SE_V  ,  SE_B  , XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  SE_N  ,  SE_M  ,SE_COMM , SE_DOT ,SE_MINS , XXXXXXX,
+#ifdef ENCODER_ENABLE
                                 L_RE_ST , XXXXXXX, NAV_ENT, SFT_ESC, XXXXXXX, XXXXXXX, SYM_SPC, NUM_BSP, XXXXXXX,R_RE_ST
+#else
+                                XXXXXXX , XXXXXXX, NAV_ENT, SFT_ESC, XXXXXXX, XXXXXXX, SYM_SPC, NUM_BSP, XXXXXXX,XXXXXXX
+#endif // ENCODER_ENABLE
     ),
 
     [_COLEMAK_DH] = LAYOUT(
