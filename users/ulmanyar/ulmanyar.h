@@ -15,6 +15,7 @@ enum layers {
     _SYM,
     _MED,
     _RGB,
+    _ADJ,
 };
 
 enum encoder_states {

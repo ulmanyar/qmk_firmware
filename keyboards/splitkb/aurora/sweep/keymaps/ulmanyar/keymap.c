@@ -22,7 +22,7 @@
 // NOTE: Modify all tap-dance, keymaps etc. when disabling encoders
 #ifdef ENCODER_ENABLE
 // Encoder states
-static enum encoder_states re_states[] = {_TABSWITCH, _VOLUME};
+static enum encoder_states re_states[] = {_TABSWITCH, _WORDCURSOR, _VOLUME};
 static size_t number_of_re_states = sizeof(re_states) / sizeof(re_states[0]);
 static uint8_t current_re_state = 0;
 
@@ -33,30 +33,6 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
     return false;
 }
 #endif // ENCODER_ENABLE
-
-
-// Custom tapping terms
-#ifdef TAPPING_TERM_PER_KEY
-uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-        case SYM_SPC:
-            return TAPPING_TERM + 25;
-        default:
-            return TAPPING_TERM;
-    }
-}
-#endif // TAPPING_TERM_PER_KEY
-
-// Custom retro tapping
-bool get_retro_tapping(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-        case NAV_ENT:
-        case SFT_ESC:
-            return false;
-        default:
-            return true;
-    }
-}
 
 
 // Note: LAlt/Enter (ALT_ENT) is not the same thing as the keyboard shortcut Alt+Enter.
@@ -95,7 +71,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // Missing: Media buttons, *LCK
        SW_WIN , SW_TAB , _______, KC_LGUI, KC_SLEP, KC_HOME, KC_PGDN, KC_PGUP, KC_END , _______,
        OS_GUI , OS_ALT , OS_CTRL, OS_SHFT,A(KC_F4), KC_LEFT, KC_DOWN, KC_UP  , KC_RGHT, SE_ARNG,
-      VD_CLOSE, VD_LEFT,VD_RIGHT, VD_NEW , DL_TOGG, KC_PSCR, KC_TAB , KC_INS , SE_ODIA, SE_ADIA,
+      VD_CLOSE, VD_LEFT,VD_RIGHT, VD_NEW ,MO(_ADJ), KC_PSCR, KC_TAB , KC_INS , SE_ODIA, SE_ADIA,
                                   _______, _______, KC_DEL , KC_BSPC
 
     ),
@@ -108,13 +84,18 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
 
     [_SYM] = LAYOUT(
-    // Missing: §, ½, *LCK
        SE_ACUT, SE_GRV , SE_CIRC, SE_TILD, SE_DIAE, SE_QUOT, SE_BSLS, SE_LABK, SE_RABK, _______,
        SE_EXLM, SE_DQUO, SE_HASH, SE_CURR, SE_PERC, SE_AMPR, SE_SLSH, SE_LPRN, SE_RPRN, SE_EQL ,
        SE_QUES, SE_AT  , SE_PND , SE_DLR , SE_PIPE, SE_ASTR, SE_LCBR, SE_LBRC, SE_RBRC, SE_RCBR,
                                   SE_PLUS, KC_CAPS, _______, _______
     ),
 
+    [_ADJ] = LAYOUT(
+       KC_NUM , KC_CAPS, KC_SCRL, _______, _______, RGB_TOG, DL_TOGG, _______, _______, KC_MUTE,
+       _______, _______, _______, _______, _______, RGB_MOD, RGB_HUI, RGB_SAI, RGB_VAI, RGB_SPI,
+       _______, _______, _______, _______, _______,RGB_RMOD, RGB_HUD, RGB_SAD, RGB_VAD, RGB_SPD,
+                                  _______, _______, _______, _______
+    ),
 //     [_LAYERINDEX] = LAYOUT(
 //       _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
 //       _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
@@ -185,3 +166,11 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
     return true;
 };
+
+void keyboard_pre_init_user(void) {
+  // Set Liatris LED pin as output
+  setPinOutput(24);
+  // Turn the LED off
+  // (Due to technical reasons, high is off and low is on)
+  writePinHigh(24);
+}

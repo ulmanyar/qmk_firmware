@@ -41,30 +41,6 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 #endif // ENCODER_ENABLE
 
 
-// Custom tapping terms
-#ifdef TAPPING_TERM_PER_KEY
-uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-        case SYM_SPC:
-            return TAPPING_TERM + 25;
-        default:
-            return TAPPING_TERM;
-    }
-}
-#endif // TAPPING_TERM_PER_KEY
-
-// Custom retro tapping
-bool get_retro_tapping(uint16_t keycode, keyrecord_t *record) {
-    switch (keycode) {
-        case NAV_ENT:
-        case SFT_ESC:
-            return false;
-        default:
-            return true;
-    }
-}
-
-
 // Note: LAlt/Enter (ALT_ENT) is not the same thing as the keyboard shortcut Alt+Enter.
 // The notation `mod/tap` denotes a key that activates the modifier `mod` when held down, and
 // produces the key `tap` when tapped (i.e. pressed and released).

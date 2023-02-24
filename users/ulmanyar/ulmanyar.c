@@ -1,5 +1,29 @@
 #include "ulmanyar.h"
 
+
+// Custom tapping terms
+#ifdef TAPPING_TERM_PER_KEY
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case SYM_SPC:
+            return TAPPING_TERM + 25;
+        default:
+            return TAPPING_TERM;
+    }
+}
+#endif // TAPPING_TERM_PER_KEY
+
+// Custom retro tapping
+bool get_retro_tapping(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case NAV_ENT:
+        case SFT_ESC:
+            return false;
+        default:
+            return true;
+    }
+}
+
 // Utility function to write modifier states to OLEDs
 void write_mod_state(
     uint16_t *mod_state,
