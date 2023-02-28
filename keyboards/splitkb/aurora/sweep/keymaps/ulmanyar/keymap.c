@@ -80,7 +80,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         SE_1  ,  SE_2  ,  SE_3  ,  SE_4  ,  SE_5  ,  SE_6  ,  SE_7  ,  SE_8  ,  SE_9  , _______,
        OS_GUI , OS_ALT , OS_CTRL, OS_SHFT, KC_F11 , KC_F12 , OS_SHFT, OS_CTRL, OS_ALT , OS_GUI ,
        KC_F1  , KC_F2  , KC_F3  , KC_F4  , KC_F5  , KC_F6  , KC_F7  , KC_F8  , KC_F9  , KC_F10 ,
-                                   SE_0  , _______, _______, _______
+                                   SE_0  , SE_DOT , _______, _______
     ),
 
     [_SYM] = LAYOUT(

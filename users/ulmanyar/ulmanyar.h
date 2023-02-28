@@ -58,7 +58,7 @@ enum custom_keycodes {
 #define VD_LEFT  G(C(KC_LEFT))
 #define VD_RIGHT G(C(KC_RIGHT))
 
-void write_mod_state(
+void render_mod_state(
     uint16_t *mod_state,
     uint16_t mod_mask,
     char mod_indicator,
@@ -66,8 +66,8 @@ void write_mod_state(
     uint8_t y
 );
 
-void oled_write_layer_state(void);
+void render_layer_state(void);
 
-void oled_write_encoder_state(enum encoder_states current_state);
+void render_encoder_state(enum encoder_states current_state);
 
 void encoder_functions(enum encoder_states current_state, bool clockwise);

@@ -25,7 +25,7 @@ bool get_retro_tapping(uint16_t keycode, keyrecord_t *record) {
 }
 
 // Utility function to write modifier states to OLEDs
-void write_mod_state(
+void render_mod_state(
     uint16_t *mod_state,
     uint16_t mod_mask,
     char mod_indicator,
@@ -39,7 +39,7 @@ void write_mod_state(
 }
 
 
-void oled_write_layer_state() {
+void render_layer_state() {
     switch (get_highest_layer(layer_state|default_layer_state)) {
         case _QWERTY:
             oled_write_P(PSTR("QWERTY\n"), false);
@@ -68,7 +68,7 @@ void oled_write_layer_state() {
 }
 
 // Utility function to write encoder state to current position
-void oled_write_encoder_state(enum encoder_states current_state) {
+void render_encoder_state(enum encoder_states current_state) {
     switch (current_state) {
         case _VOLUME:
             oled_write_P(PSTR("Volume\n"), false);

@@ -218,7 +218,7 @@ bool oled_task_user(void) {
         oled_write_raw_P(layer_image[1], sizeof(layer_image[1]));
         // Write host keyboard layer state to OLEDs
         oled_set_cursor(4, 1);
-        oled_write_layer_state();
+        render_layer_state();
 
         #ifdef ENCODER_ENABLE
         // Define encoder image
@@ -258,18 +258,18 @@ bool oled_task_user(void) {
         oled_write_pixel(x,   y+4, true);
         // Write left rotary encoder state to OLEDs
         oled_set_cursor(4, 3);
-        oled_write_encoder_state(lre_states[current_lre_state]);
+        render_encoder_state(lre_states[current_lre_state]);
         // Write right rotary encoder state to OLEDs
         oled_set_cursor(4, 5);
-        oled_write_encoder_state(rre_states[current_rre_state]);
+        render_encoder_state(rre_states[current_rre_state]);
         #endif // ENCODER_ENABLE
 
         // Write mod status to OLEDs
         mod_state = get_mods();
-        write_mod_state(&mod_state, MOD_BIT(KC_LSFT), 0x18, 16, 2);
-        write_mod_state(&mod_state, MOD_BIT(KC_LCTL), 0x5E, 18, 2);
-        write_mod_state(&mod_state, MOD_BIT(KC_LALT), 0x25, 16, 4);
-        write_mod_state(&mod_state, MOD_BIT(KC_LGUI), 0x04, 18, 4);
+        render_mod_state(&mod_state, MOD_BIT(KC_LSFT), 0x18, 16, 2);
+        render_mod_state(&mod_state, MOD_BIT(KC_LCTL), 0x5E, 18, 2);
+        render_mod_state(&mod_state, MOD_BIT(KC_LALT), 0x25, 16, 4);
+        render_mod_state(&mod_state, MOD_BIT(KC_LGUI), 0x04, 18, 4);
 
         // Write host keyboard LED state to OLEDs
         oled_set_cursor(0, 7);
