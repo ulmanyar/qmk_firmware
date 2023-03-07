@@ -5,8 +5,9 @@
 #ifdef TAPPING_TERM_PER_KEY
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
     switch (keycode) {
+        case NUM_BSP:
         case SYM_SPC:
-            return TAPPING_TERM + 25;
+            return TAPPING_TERM + 50;
         default:
             return TAPPING_TERM;
     }
@@ -39,7 +40,7 @@ void render_mod_state(
 }
 
 
-void render_layer_state() {
+void render_layer_state_text() {
     switch (get_highest_layer(layer_state|default_layer_state)) {
         case _QWERTY:
             oled_write_P(PSTR("QWERTY\n"), false);

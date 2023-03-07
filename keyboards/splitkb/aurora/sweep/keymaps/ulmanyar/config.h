@@ -18,6 +18,7 @@
 
 #define TAPPING_TERM 125
 #define RETRO_TAPPING_PER_KEY
+#define PERMISSIVE_HOLD
 #define TAPPING_TERM_PER_KEY
 
 // Not yet available in `keymap.json` format

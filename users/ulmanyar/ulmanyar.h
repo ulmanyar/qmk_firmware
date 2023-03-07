@@ -66,7 +66,7 @@ void render_mod_state(
     uint8_t y
 );
 
-void render_layer_state(void);
+void render_layer_state_text(void);
 
 void render_encoder_state(enum encoder_states current_state);
 
