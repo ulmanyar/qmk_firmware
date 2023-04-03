@@ -1,5 +1,25 @@
 #include "ulmanyar.h"
 
+// Combos
+uint16_t COMBO_LEN = COMBO_LENGTH; // remove the COMBO_COUNT define and use this instead!
+
+const uint16_t PROGMEM tn_combo[] = {KC_T, KC_N, COMBO_END};
+const uint16_t PROGMEM ar_combo[] = {KC_A, KC_R, COMBO_END};
+const uint16_t PROGMEM fp_combo[] = {KC_F, KC_P, COMBO_END};
+const uint16_t PROGMEM io_combo[] = {KC_I, KC_O, COMBO_END};
+const uint16_t PROGMEM ne_combo[] = {KC_N, KC_E, COMBO_END};
+const uint16_t PROGMEM nei_combo[] = {KC_N, KC_E, KC_I, COMBO_END};
+const uint16_t PROGMEM ney_combo[] = {KC_N, KC_E, KC_Y, COMBO_END};
+
+combo_t key_combos[] = {
+  [TN_ESC] = COMBO(tn_combo, KC_ESC),
+  [AR_ESC] = COMBO(ar_combo, KC_ESC),
+  [FP_TAB] = COMBO(fp_combo, KC_TAB),
+  [IO_ENTER] = COMBO(io_combo, KC_ENT),
+  [NE_BSPC] = COMBO(ne_combo, KC_BSPC),
+  [NEI_C_BSPC] = COMBO(nei_combo, C(KC_BSPC)),
+  [NEY_A_BSPC] = COMBO(ney_combo, A(KC_BSPC)),
+};
 
 // Custom tapping terms
 #ifdef TAPPING_TERM_PER_KEY
@@ -187,6 +207,10 @@ bool is_oneshot_cancel_key(uint16_t keycode, keyrecord_t *record) {
             // Cancel on hold
             return true;
         }
+    case MO(_NAV):
+    case MO(_NUM):
+    case MO(_SYM):
+        return true;
     default:
         return false;
     }
@@ -212,6 +236,9 @@ bool is_oneshot_ignored_key(uint16_t keycode, keyrecord_t *record) {
     case OS_CTRL:
     case OS_ALT:
     case OS_GUI:
+    case MO(_NAV):
+    case MO(_NUM):
+    case MO(_SYM):
         return true;
     default:
         return false;

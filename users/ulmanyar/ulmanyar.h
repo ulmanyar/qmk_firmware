@@ -43,6 +43,18 @@ enum custom_keycodes {
     OS_GUI,
 };
 
+// COMBOS
+enum combos {
+  TN_ESC,
+  AR_ESC,
+  FP_TAB,
+  IO_ENTER,
+  NE_BSPC,
+  NEI_C_BSPC,
+  NEY_A_BSPC,
+  COMBO_LENGTH
+};
+
 // Aliases for readability
 // Layer-tap
 #define NAV_ENT  LT(_NAV, KC_ENT)

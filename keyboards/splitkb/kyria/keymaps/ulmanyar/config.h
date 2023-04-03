@@ -28,6 +28,11 @@
 #    define RGBLIGHT_LIMIT_VAL 150
 #endif
 
+#ifdef COMBO_ENABLE
+#    define COMBO_TERM 40
+#    define COMBO_ONLY_FROM_LAYER 1
+#endif
+
 // Lets you roll mod-tap keys
 // #define IGNORE_MOD_TAP_INTERRUPT
 #define RETRO_TAPPING_PER_KEY
