@@ -1,6 +1,5 @@
 #include "ulmanyar.h"
 
-
 #ifdef KEY_OVERRIDE_ENABLE
 // This globally defines all key overrides to be used
 const key_override_t vd_swapper = ko_make_basic(MOD_MASK_SHIFT, VD_RIGHT, VD_LEFT);
