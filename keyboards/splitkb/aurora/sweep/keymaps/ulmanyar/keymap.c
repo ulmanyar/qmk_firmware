@@ -49,7 +49,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #endif // ENCODER_ENABLE
         SE_A  ,  SE_S  ,  SE_D  ,  SE_F  ,  SE_G  ,  SE_H  ,  SE_J  ,  SE_K  ,  SE_L  ,  SE_P  ,
         SE_Z  ,  SE_X  ,  SE_C  ,  SE_V  ,  SE_B  ,  SE_N  ,  SE_M  ,SE_COMM , SE_DOT ,SE_MINS ,
-                                  NAV_ENT, SFT_ESC, SYM_SPC, NUM_BSP
+                                 MO(_NAV), SFT_ESC, SYM_SPC, MO(_NUM)
     ),
 
     [_COLEMAK_DH] = LAYOUT(
@@ -60,18 +60,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #endif // ENCODER_ENABLE
         SE_A  ,  SE_R  ,  SE_S  ,   SE_T ,   SE_G ,  SE_M  ,  SE_N  ,  SE_E  ,  SE_I  ,  SE_O  ,
         SE_Z  ,  SE_X  ,  SE_C  ,   SE_D ,   SE_V ,  SE_K  ,  SE_H  ,SE_COMM , SE_DOT ,SE_MINS ,
-#ifdef ENCODER_ENABLE
-                                  NAV_ENT, SFT_ESC, SYM_SPC, NUM_BSP
-#else
-                                XXXXXXX , XXXXXXX, NAV_ENT, SFT_ESC, XXXXXXX, XXXXXXX, SYM_SPC, NUM_BSP, XXXXXXX,XXXXXXX
-#endif // ENCODER_ENABLE
+                                 MO(_NAV), SFT_ESC, SYM_SPC, MO(_NUM)
     ),
 
     [_NAV] = LAYOUT(
     // Missing: Media buttons, *LCK
-       SW_WIN , SW_TAB , _______, KC_LGUI, KC_SLEP, KC_HOME, KC_PGDN, KC_PGUP, KC_END , _______,
+       SW_WIN , SW_TAB ,VD_RIGHT, KC_LGUI, KC_SLEP, KC_HOME, KC_PGDN, KC_PGUP, KC_END , _______,
        OS_GUI , OS_ALT , OS_CTRL, OS_SHFT,A(KC_F4), KC_LEFT, KC_DOWN, KC_UP  , KC_RGHT, SE_ARNG,
-      VD_CLOSE, VD_LEFT,VD_RIGHT, VD_NEW ,MO(_ADJ), KC_PSCR, KC_TAB , KC_INS , SE_ODIA, SE_ADIA,
+       _______, _______, _______,MO(_ADJ), VD_NEW , KC_PSCR, KC_TAB , KC_INS , SE_ODIA, SE_ADIA,
                                   _______, _______, KC_DEL , KC_BSPC
 
     ),

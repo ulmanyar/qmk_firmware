@@ -49,33 +49,25 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QWERTY] = LAYOUT(
     // Missing: *LCK, RAlt
-      XXXXXXX,  SE_Q  ,  SE_W  ,  SE_E  ,  SE_R  ,  SE_T  ,                                      SE_Y  ,  SE_U  ,  SE_I  ,  SE_O  ,XXXXXXX , XXXXXXX,
+      KC_ESC ,  SE_Q  ,  SE_W  ,  SE_E  ,  SE_R  ,  SE_T  ,                                      SE_Y  ,  SE_U  ,  SE_I  ,  SE_O  ,XXXXXXX , KC_BSPC,
       XXXXXXX,  SE_A  ,  SE_S  ,  SE_D  ,  SE_F  ,  SE_G  ,                                      SE_H  ,  SE_J  ,  SE_K  ,  SE_L  ,  SE_P  , XXXXXXX,
       XXXXXXX,  SE_Z  ,  SE_X  ,  SE_C  ,  SE_V  ,  SE_B  , XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  SE_N  ,  SE_M  ,SE_COMM , SE_DOT ,SE_MINS , XXXXXXX,
-#ifdef ENCODER_ENABLE
-                                L_RE_ST , XXXXXXX, NAV_ENT, SFT_ESC, XXXXXXX, XXXXXXX, SYM_SPC, NUM_BSP, XXXXXXX,R_RE_ST
-#else
-                                XXXXXXX , XXXXXXX, NAV_ENT, SFT_ESC, XXXXXXX, XXXXXXX, SYM_SPC, NUM_BSP, XXXXXXX,XXXXXXX
-#endif // ENCODER_ENABLE
+                                L_RE_ST ,MO(_SYM),MO(_NAV), KC_LSFT, XXXXXXX, XXXXXXX, KC_SPC ,MO(_NUM), XXXXXXX,R_RE_ST
     ),
 
     [_COLEMAK_DH] = LAYOUT(
     // Missing: *LCK, RAlt
-      XXXXXXX,  SE_Q  ,  SE_W  ,  SE_F  ,   SE_P ,   SE_B ,                                      SE_J  ,  SE_L  ,  SE_U  ,  SE_Y  ,XXXXXXX , XXXXXXX,
+      KC_ESC ,  SE_Q  ,  SE_W  ,  SE_F  ,   SE_P ,   SE_B ,                                      SE_J  ,  SE_L  ,  SE_U  ,  SE_Y  ,XXXXXXX , XXXXXXX,
       XXXXXXX,  SE_A  ,  SE_R  ,  SE_S  ,   SE_T ,   SE_G ,                                      SE_M  ,  SE_N  ,  SE_E  ,  SE_I  ,  SE_O  , XXXXXXX,
       XXXXXXX,  SE_Z  ,  SE_X  ,  SE_C  ,   SE_D ,   SE_V , XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  SE_K  ,  SE_H  ,SE_COMM , SE_DOT ,SE_MINS , XXXXXXX,
-#ifdef ENCODER_ENABLE
-                                L_RE_ST , XXXXXXX, NAV_ENT, SFT_ESC, XXXXXXX, XXXXXXX, SYM_SPC, NUM_BSP, XXXXXXX,R_RE_ST
-#else
-                                XXXXXXX , XXXXXXX, NAV_ENT, SFT_ESC, XXXXXXX, XXXXXXX, SYM_SPC, NUM_BSP, XXXXXXX,XXXXXXX
-#endif // ENCODER_ENABLE
+                                L_RE_ST ,MO(_SYM),MO(_NAV), KC_LSFT, XXXXXXX, XXXXXXX, KC_SPC ,MO(_NUM), XXXXXXX,R_RE_ST
     ),
 
     [_NAV] = LAYOUT(
     // Missing: Media buttons, *LCK
-      _______, SW_WIN , SW_TAB , _______, KC_LGUI, KC_SLEP,                                     KC_HOME, KC_PGDN, KC_PGUP, KC_END , _______, _______,
+      _______, SW_WIN , SW_TAB ,VD_RIGHT, KC_LGUI, KC_SLEP,                                     KC_HOME, KC_PGDN, KC_PGUP, KC_END , _______, _______,
       _______, OS_GUI , OS_ALT , OS_CTRL, OS_SHFT,A(KC_F4),                                     KC_LEFT, KC_DOWN, KC_UP  , KC_RGHT, SE_ARNG, _______,
-      _______,VD_CLOSE, VD_LEFT,VD_RIGHT, VD_NEW , DL_TOGG, _______, _______, _______, _______, KC_PSCR, KC_TAB , KC_INS , SE_ODIA, SE_ADIA, _______,
+      _______, _______, _______, _______, DL_TOGG, VD_NEW , _______, _______, _______, _______, KC_PSCR, KC_TAB , KC_INS , SE_ODIA, SE_ADIA, _______,
                                  _______, _______, _______, _______, _______, _______, KC_DEL , KC_BSPC, _______, _______
 
     ),
@@ -218,7 +210,7 @@ bool oled_task_user(void) {
         oled_write_raw_P(layer_image[1], sizeof(layer_image[1]));
         // Write host keyboard layer state to OLEDs
         oled_set_cursor(4, 1);
-        render_layer_state();
+        render_layer_state_text();
 
         #ifdef ENCODER_ENABLE
         // Define encoder image

@@ -18,7 +18,6 @@
 
 #define TAPPING_TERM 125
 #define RETRO_TAPPING_PER_KEY
-#define PERMISSIVE_HOLD
 #define TAPPING_TERM_PER_KEY
 
 // Not yet available in `keymap.json` format
@@ -28,6 +27,11 @@
 #    define ENABLE_RGB_MATRIX_SOLID_REACTIVE_SIMPLE
 #    define ENABLE_RGB_MATRIX_SOLID_SPLASH
 #    define ENABLE_RGB_MATRIX_RAINBOW_BEACON 
+#endif
+
+#ifdef COMBO_ENABLE
+#    define COMBO_TERM 40
+#    define COMBO_ONLY_FROM_LAYER 1
 #endif
 
 // Not yet available in `keymap.json` format

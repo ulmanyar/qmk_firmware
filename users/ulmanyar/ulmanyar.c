@@ -1,6 +1,40 @@
 #include "ulmanyar.h"
 
 
+#ifdef KEY_OVERRIDE_ENABLE
+// This globally defines all key overrides to be used
+const key_override_t vd_swapper = ko_make_basic(MOD_MASK_SHIFT, VD_RIGHT, VD_LEFT);
+const key_override_t vd_manager = ko_make_basic(MOD_MASK_SHIFT, VD_NEW, VD_CLOSE);
+const key_override_t **key_overrides = (const key_override_t *[]){
+    &vd_swapper,
+    &vd_manager,
+    NULL // Null terminate the array of overrides!
+};
+#endif // KEY_OVERRIDE_ENABLE
+
+// Combos
+#ifdef COMBO_ENABLE
+uint16_t COMBO_LEN = COMBO_LENGTH; // remove the COMBO_COUNT define and use this instead!
+
+const uint16_t PROGMEM tn_combo[] = {KC_T, KC_N, COMBO_END};
+const uint16_t PROGMEM ar_combo[] = {KC_A, KC_R, COMBO_END};
+const uint16_t PROGMEM st_combo[] = {KC_S, KC_T, COMBO_END};
+const uint16_t PROGMEM io_combo[] = {KC_I, KC_O, COMBO_END};
+const uint16_t PROGMEM ne_combo[] = {KC_N, KC_E, COMBO_END};
+const uint16_t PROGMEM nei_combo[] = {KC_N, KC_E, KC_I, COMBO_END};
+const uint16_t PROGMEM luy_combo[] = {KC_L, KC_U, KC_Y, COMBO_END};
+
+combo_t key_combos[] = {
+  [TN_ESC] = COMBO(tn_combo, KC_ESC),
+  [AR_ESC] = COMBO(ar_combo, KC_ESC),
+  [ST_TAB] = COMBO(st_combo, KC_TAB),
+  [IO_ENTER] = COMBO(io_combo, KC_ENT),
+  [NE_BSPC] = COMBO(ne_combo, KC_BSPC),
+  [NEI_C_BSPC] = COMBO(nei_combo, C(KC_BSPC)),
+  [LUY_A_BSPC] = COMBO(luy_combo, A(KC_BSPC)),
+};
+#endif
+
 // Custom tapping terms
 #ifdef TAPPING_TERM_PER_KEY
 uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
@@ -187,6 +221,10 @@ bool is_oneshot_cancel_key(uint16_t keycode, keyrecord_t *record) {
             // Cancel on hold
             return true;
         }
+    case MO(_NAV):
+    case MO(_NUM):
+    case MO(_SYM):
+        return true;
     default:
         return false;
     }
@@ -212,6 +250,9 @@ bool is_oneshot_ignored_key(uint16_t keycode, keyrecord_t *record) {
     case OS_CTRL:
     case OS_ALT:
     case OS_GUI:
+    case MO(_NAV):
+    case MO(_NUM):
+    case MO(_SYM):
         return true;
     default:
         return false;

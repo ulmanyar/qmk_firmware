@@ -17,6 +17,7 @@
 #pragma once
 
 #define TAPPING_TERM 125
+#define RETRO_TAPPING_PER_KEY
 // #define TAPPING_TERM_PER_KEY
 
 #ifdef RGBLIGHT_ENABLE
@@ -28,9 +29,10 @@
 #    define RGBLIGHT_LIMIT_VAL 150
 #endif
 
-// Lets you roll mod-tap keys
-// #define IGNORE_MOD_TAP_INTERRUPT
-#define RETRO_TAPPING_PER_KEY
+#ifdef COMBO_ENABLE
+#    define COMBO_TERM 40
+#    define COMBO_ONLY_FROM_LAYER 1
+#endif
 
 // EC11K encoders have a different resolution than other EC11 encoders.
 // When using the default resolution of 4, if you notice your encoder skipping
