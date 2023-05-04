@@ -81,7 +81,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [_SYM] = LAYOUT(
     // Missing: §, ½, *LCK
-      _______, SE_ACUT, SE_GRV , SE_CIRC, SE_TILD, SE_DIAE,                                     SE_QUOT, SE_BSLS, SE_LABK, SE_RABK, _______, _______,
+      _______, SE_ACUT, SE_GRV , SE_CIRC, SE_TILD, SE_DIAE,                                     SE_QUOT, SE_BSLS, SE_LABK, SE_RABK, SE_PLUS, _______,
       _______, SE_EXLM, SE_DQUO, SE_HASH, SE_CURR, SE_PERC,                                     SE_AMPR, SE_SLSH, SE_LPRN, SE_RPRN, SE_EQL , _______,
       _______, SE_QUES, SE_AT  , SE_PND , SE_DLR , SE_PIPE, _______, _______, _______, _______, SE_ASTR, SE_LCBR, SE_LBRC, SE_RBRC, SE_RCBR, _______,
                                  _______, _______, SE_PLUS, KC_CAPS, _______, _______, _______, _______, _______, _______
