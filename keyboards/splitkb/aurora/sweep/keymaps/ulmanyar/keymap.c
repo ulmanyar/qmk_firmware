@@ -16,6 +16,7 @@
 #include QMK_KEYBOARD_H
 #include "keymap_swedish.h"
 #include "ulmanyar.h"
+#include "combos.inc"
 #include "oneshot.h"
 #include "swapper.h"
 
@@ -49,7 +50,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 #endif // ENCODER_ENABLE
         SE_A  ,  SE_S  ,  SE_D  ,  SE_F  ,  SE_G  ,  SE_H  ,  SE_J  ,  SE_K  ,  SE_L  ,  SE_P  ,
         SE_Z  ,  SE_X  ,  SE_C  ,  SE_V  ,  SE_B  ,  SE_N  ,  SE_M  ,SE_COMM , SE_DOT ,SE_MINS ,
-                                 MO(_NAV), SFT_ESC, SYM_SPC, MO(_NUM)
+                                 MO(_NAV), SFT_ESC, KC_SPC , MO(_NUM)
     ),
 
     [_COLEMAK_DH] = LAYOUT(
@@ -68,7 +69,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
        SW_WIN , SW_TAB ,VD_RIGHT, KC_LGUI, KC_SLEP, KC_HOME, KC_PGDN, KC_PGUP, KC_END , _______,
        OS_GUI , OS_ALT , OS_CTRL, OS_SHFT,A(KC_F4), KC_LEFT, KC_DOWN, KC_UP  , KC_RGHT, SE_ARNG,
        _______, _______, _______,MO(_ADJ), VD_NEW , KC_PSCR, KC_TAB , KC_INS , SE_ODIA, SE_ADIA,
-                                  _______, _______, KC_DEL , KC_BSPC
+                                  _______, _______, KC_BSPC, KC_DEL 
 
     ),
 
