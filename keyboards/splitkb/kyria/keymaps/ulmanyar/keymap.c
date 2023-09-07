@@ -42,10 +42,6 @@ bool encoder_update_user(uint8_t index, bool clockwise) {
 #endif // ENCODER_ENABLE
 
 
-// Note: LAlt/Enter (ALT_ENT) is not the same thing as the keyboard shortcut Alt+Enter.
-// The notation `mod/tap` denotes a key that activates the modifier `mod` when held down, and
-// produces the key `tap` when tapped (i.e. pressed and released).
-
 // clang-format off
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     [_QWERTY] = LAYOUT(
@@ -53,7 +49,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       KC_ESC ,  SE_Q  ,  SE_W  ,  SE_E  ,  SE_R  ,  SE_T  ,                                      SE_Y  ,  SE_U  ,  SE_I  ,  SE_O  ,XXXXXXX , KC_BSPC,
       XXXXXXX,  SE_A  ,  SE_S  ,  SE_D  ,  SE_F  ,  SE_G  ,                                      SE_H  ,  SE_J  ,  SE_K  ,  SE_L  ,  SE_P  , XXXXXXX,
       XXXXXXX,  SE_Z  ,  SE_X  ,  SE_C  ,  SE_V  ,  SE_B  , XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  SE_N  ,  SE_M  ,SE_COMM , SE_DOT ,SE_MINS , XXXXXXX,
-                                L_RE_ST ,MO(_SYM),MO(_NAV), KC_LSFT, XXXXXXX, XXXXXXX, KC_SPC ,MO(_NUM), XXXXXXX,R_RE_ST
+                                L_RE_ST ,MO(_SYM),MO(_NAV), KC_LSFT, XXXXXXX, XXXXXXX, KC_SPC ,MO(_NUM),MO(_FUN),R_RE_ST
     ),
 
     [_COLEMAK_DH] = LAYOUT(
@@ -61,31 +57,37 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
       KC_ESC ,  SE_Q  ,  SE_W  ,  SE_F  ,   SE_P ,   SE_B ,                                      SE_J  ,  SE_L  ,  SE_U  ,  SE_Y  ,XXXXXXX , XXXXXXX,
       XXXXXXX,  SE_A  ,  SE_R  ,  SE_S  ,   SE_T ,   SE_G ,                                      SE_M  ,  SE_N  ,  SE_E  ,  SE_I  ,  SE_O  , XXXXXXX,
       XXXXXXX,  SE_Z  ,  SE_X  ,  SE_C  ,   SE_D ,   SE_V , XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,  SE_K  ,  SE_H  ,SE_COMM , SE_DOT ,SE_MINS , XXXXXXX,
-                                L_RE_ST ,MO(_SYM),MO(_NAV), KC_LSFT, XXXXXXX, XXXXXXX, KC_SPC ,MO(_NUM), XXXXXXX,R_RE_ST
+                                L_RE_ST ,MO(_SYM),MO(_NAV), KC_LSFT, XXXXXXX, XXXXXXX, KC_SPC ,MO(_NUM),MO(_FUN),R_RE_ST
     ),
 
     [_NAV] = LAYOUT(
     // Missing: Media buttons, *LCK
-      _______, SW_WIN , SW_TAB ,VD_RIGHT, KC_LGUI, KC_SLEP,                                     KC_HOME, KC_PGDN, KC_PGUP, KC_END , _______, _______,
-      _______, OS_GUI , OS_ALT , OS_CTRL, OS_SHFT,A(KC_F4),                                     KC_LEFT, KC_DOWN, KC_UP  , KC_RGHT, SE_ARNG, _______,
-      _______, _______, _______, _______, DL_TOGG, VD_NEW , _______, _______, _______, _______, KC_PSCR, KC_TAB , KC_INS , SE_ODIA, SE_ADIA, _______,
+      _______, KC_SLEP, SW_WIN , SW_TAB ,VD_RIGHT, KC_LGUI,                                     KC_HOME, KC_PGDN, KC_PGUP, KC_END , _______, _______,
+      _______, OS_GUI , OS_ALT , OS_CTRL, OS_SHFT,A(KC_F4),                                     KC_LEFT, KC_DOWN, KC_UP  , KC_RGHT, _______, _______,
+      _______, _______, _______, _______, DL_TOGG, VD_NEW , _______, _______, _______, _______, KC_PSCR, KC_INS , SE_ODIA, SE_ADIA, SE_ARNG, _______,
                                  _______, _______, _______, _______, _______, _______, KC_BSPC, KC_DEL , _______, _______
-
-    ),
-
-    [_NUM] = LAYOUT(
-      _______,  SE_1  ,  SE_2  ,  SE_3  ,  SE_4  ,  SE_5  ,                                      SE_6  ,  SE_7  ,  SE_8  ,  SE_9  , _______, _______,
-      _______, OS_GUI , OS_ALT , OS_CTRL, OS_SHFT, KC_F11 ,                                     KC_F12 , OS_SHFT, OS_CTRL, OS_ALT , OS_GUI , _______,
-      _______, KC_F1  , KC_F2  , KC_F3  , KC_F4  , KC_F5  , _______, _______, _______, _______, KC_F6  , KC_F7  , KC_F8  , KC_F9  , KC_F10 , _______,
-                                 _______, _______,  SE_0  , SE_DOT , _______, _______, _______, _______, _______, _______
     ),
 
     [_SYM] = LAYOUT(
     // Missing: §, ½, *LCK
-      _______, SE_ACUT, SE_GRV , SE_CIRC, SE_TILD, SE_DIAE,                                     SE_QUOT, SE_BSLS, SE_LABK, SE_RABK, SE_PLUS, _______,
-      _______, SE_EXLM, SE_DQUO, SE_HASH, SE_CURR, SE_PERC,                                     SE_AMPR, SE_SLSH, SE_LPRN, SE_RPRN, SE_EQL , _______,
-      _______, SE_QUES, SE_AT  , SE_PND , SE_DLR , SE_PIPE, _______, _______, _______, _______, SE_ASTR, SE_LCBR, SE_LBRC, SE_RBRC, SE_RCBR, _______,
-                                 _______, _______, SE_PLUS, KC_CAPS, _______, _______, _______, _______, _______, _______
+      _______, SE_PND , SE_EXLM, SE_LABK, SE_LBRC, SE_SLSH,                                     SE_BSLS, SE_RBRC, SE_RABK, SE_QUES, SE_PLUS, _______,
+      _______, SE_CURR, SE_DQUO, SE_LCBR, SE_LPRN, SE_PERC,                                     SE_AMPR, SE_RPRN, SE_RCBR, SE_QUOT, SE_EQL , _______,
+      _______, SE_PIPE, SE_AT  , SE_PND , SE_DLR , SE_PIPE, _______, _______, _______, _______, SE_MINS, SE_PLUS, SE_EQL , SE_ASTR, SE_UNDS, _______,
+                                 _______, _______, _______, KC_CAPS, _______, _______, _______, _______, _______, _______
+    ),
+
+    [_NUM] = LAYOUT(
+      _______, _______,  SE_7  ,  SE_8  ,  SE_9  , SE_PLUS,                                     SE_ACUT, SE_CIRC, SE_TILD, SE_DIAE, _______, _______,
+      _______, SE_SLSH,  SE_4  ,  SE_5  ,  SE_6  , SE_EQL ,                                     SE_GRV , OS_SHFT, OS_CTRL, OS_ALT , OS_GUI , _______,
+      _______, SE_ASTR,  SE_1  ,  SE_2  ,  SE_3  , SE_MINS, _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+                                 _______, _______,  SE_0  , SE_DOT , _______, _______,TG(_NUM), _______, _______, _______
+    ),
+
+    [_FUN] = LAYOUT(
+      _______, _______,  KC_F7 ,  KC_F8 ,  KC_F9 , KC_F10 ,                                     _______, _______, _______, _______, _______, _______,
+      _______, _______,  KC_F4 ,  KC_F5 ,  KC_F6 , KC_F11 ,                                     _______, OS_SHFT, OS_CTRL, OS_ALT , OS_GUI , _______,
+      _______, _______,  KC_F1 ,  KC_F2 ,  KC_F3 , KC_F12 , _______, _______, _______, _______, _______, _______, _______, _______, _______, _______,
+                                 _______, _______, _______, _______, _______, _______, _______, _______, _______, _______
     ),
 
 // /*

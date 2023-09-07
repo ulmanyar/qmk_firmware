@@ -61,11 +61,14 @@ void render_layer_state_text() {
         case _NAV:
             oled_write_P(PSTR("Navigation\n"), false);
             break;
+        case _SYM:
+            oled_write_P(PSTR("Symbols\n"), false);
+            break;
         case _NUM:
             oled_write_P(PSTR("Numbers\n"), false);
             break;
-        case _SYM:
-            oled_write_P(PSTR("Symbols\n"), false);
+        case _FUN:
+            oled_write_P(PSTR("F-keys\n"), false);
             break;
         case _MED:
             oled_write_P(PSTR("Media\n"), false);
@@ -198,8 +201,9 @@ bool is_oneshot_cancel_key(uint16_t keycode, keyrecord_t *record) {
             return true;
         }
     case MO(_NAV):
-    case MO(_NUM):
     case MO(_SYM):
+    case MO(_NUM):
+    case MO(_FUN):
         return true;
     default:
         return false;
@@ -227,8 +231,9 @@ bool is_oneshot_ignored_key(uint16_t keycode, keyrecord_t *record) {
     case OS_ALT:
     case OS_GUI:
     case MO(_NAV):
-    case MO(_NUM):
     case MO(_SYM):
+    case MO(_NUM):
+    case MO(_FUN):
         return true;
     default:
         return false;
