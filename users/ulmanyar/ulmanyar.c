@@ -35,6 +35,7 @@ bool get_retro_tapping(uint16_t keycode, keyrecord_t *record) {
     }
 }
 
+#ifdef OLED_ENABLE
 // Utility function to write modifier states to OLEDs
 void render_mod_state(
     uint16_t *mod_state,
@@ -104,6 +105,7 @@ void render_encoder_state(enum encoder_states current_state) {
             oled_write_P(PSTR("Undefined\n"), false);
     }
 }
+#endif // OLED_ENABLE
 
 
 // Utility function to execute encoder functionality based on encoder_states

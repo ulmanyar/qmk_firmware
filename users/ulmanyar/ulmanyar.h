@@ -42,6 +42,8 @@ enum custom_keycodes {
     OS_CTRL,
     OS_ALT,
     OS_GUI,
+
+    NUM_TOG,
 };
 
 // Aliases for readability
@@ -67,7 +69,9 @@ void render_mod_state(
     uint8_t y
 );
 
+#ifdef OLED_ENABLE
 void render_layer_state_text(void);
+#endif
 
 void render_encoder_state(enum encoder_states current_state);
 
