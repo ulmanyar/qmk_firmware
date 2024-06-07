@@ -24,14 +24,14 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         KC_ESC , _________________QWERTY_L1_________________, _________________QWERTY_R1_________________, SE_ADIA,
         KC_TAB , _________________QWERTY_L2_________________, _________________QWERTY_R2_________________, SE_ODIA,
         KC_LSFT, _________________QWERTY_L3_________________, _________________QWERTY_R3_________________, KC_RSFT,
-        KC_LCTL, KC_LGUI, KC_CAPS,MO(_SYM),MO(_NAV),      KC_SPC,     MO(_NUM),MO(_FUN), KC_LEFT, KC_DOWN, KC_RGHT
+        KC_LCTL, KC_LGUI,MO(_ADJ),MO(_SYM),MO(_NAV),      KC_SPC,     MO(_NUM),MO(_FUN), KC_CAPS, KC_APP , KC_RCTL
     ),
 
     [_COLEMAK_DH] = LAYOUT_planck_mit_wrapper(
         KC_ESC , ______________COLEMAK_MOD_DH_L1____________, ______________COLEMAK_MOD_DH_R1____________, SE_ADIA,
         KC_TAB , ______________COLEMAK_MOD_DH_L2____________, ______________COLEMAK_MOD_DH_R2____________, SE_ODIA,
         KC_LSFT, ______________COLEMAK_MOD_DH_L3____________, ______________COLEMAK_MOD_DH_R3____________, KC_RSFT,
-        KC_LCTL, KC_LGUI, KC_CAPS,MO(_SYM),MO(_NAV),      KC_SPC,     MO(_NUM),MO(_FUN), KC_LEFT, KC_DOWN, KC_RGHT
+        KC_LCTL, KC_LGUI,MO(_RGB),MO(_SYM),MO(_NAV),      KC_SPC,     MO(_NUM),MO(_FUN), KC_CAPS, KC_APP , KC_RCTL
     ),
 
     /* Layer 1
@@ -84,6 +84,12 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
         XXXXXXX, _______, _______, _______, _______,     _______,      _______, _______, _______, _______, XXXXXXX
     ),
 
+    [_RGB] = LAYOUT_planck_mit_wrapper(
+        XXXXXXX, __________________ADJUST_L1________________, __________________ADJUST_R1________________, XXXXXXX,
+        XXXXXXX, __________________ADJUST_L2________________, __________________ADJUST_R2________________, XXXXXXX,
+        XXXXXXX, __________________ADJUST_L3________________, __________________ADJUST_R3________________, XXXXXXX,
+        XXXXXXX, _______, _______, _______, _______,     _______,      _______, _______, _______, _______, XXXXXXX
+    ),
 };
 
 bool swap_windows_active = false;
