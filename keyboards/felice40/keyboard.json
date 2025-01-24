@@ -11,6 +11,7 @@
         "extrakey": true,
         "mousekey": true,
         "nkro": true,
+        "rgblight": true
     },
     "matrix_pins": {
         "cols": [
@@ -30,6 +31,10 @@
             "GP15"
         ],
         "rows": ["GP7", "GP11", "GP17", "GP18"]
+    },
+    "bootmagic": {
+        "enabled": true,
+        "matrix": [0, 1]
     },
     "rgb_matrix": {
         "driver": "ws2812",
