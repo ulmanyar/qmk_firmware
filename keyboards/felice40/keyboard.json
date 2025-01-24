@@ -1,0 +1,120 @@
+{
+    "manufacturer": "NIUZI",
+    "keyboard_name": "felice40",
+    "maintainer": "牛子",
+    "bootloader": "rp2040",
+    "diode_direction": "COL2ROW",
+    "features": {
+        "bootmagic": true,
+        "command": false,
+        "console": false,
+        "extrakey": true,
+        "mousekey": true,
+        "nkro": true,
+    },
+    "matrix_pins": {
+        "cols": [
+            "GP0",
+            "GP1",
+            "GP2",
+            "GP3",
+            "GP4",
+            "GP5",
+            "GP6",
+            "GP8",
+            "GP9",
+            "GP10",
+            "GP12",
+            "GP13",
+            "GP14",
+            "GP15"
+        ],
+        "rows": ["GP7", "GP11", "GP17", "GP18"]
+    },
+    "rgb_matrix": {
+        "driver": "ws2812",
+        "sat_steps": 8,
+        "val_steps": 8,
+        "speed_steps": 8
+    },
+    "rgblight": {
+        "led_count": 12,
+        "saturation_steps": 8,
+        "brightness_steps": 8,
+        "sleep": true,
+        "animations": {
+            "alternating": true,
+            "breathing": true,
+            "christmas": true,
+            "knight": true,
+            "rainbow_mood": true,
+            "rainbow_swirl": true,
+            "rgb_test": true,
+            "snake": true,
+            "static_gradient": true,
+            "twinkle": true
+        }
+    },
+    "ws2812": { "pin": "GP22", "driver": "vendor" },
+    "processor": "RP2040",
+    "url": "",
+    "usb": { "device_version": "1.0.0", "pid": "0x0000", "vid": "0xBEEF" },
+    "layouts": {
+        "LAYOUT": {
+            "layout": [
+                {"label": "K00", "matrix": [0, 1],  "x":1.25,   "y":0},
+                {"label": "K01", "matrix": [0, 2],  "x":2.25,   "y":0},
+                {"label": "K02", "matrix": [0, 3],  "x":3.25,   "y":0},
+                {"label": "K03", "matrix": [0, 4],  "x":4.25,   "y":0},
+                {"label": "K04", "matrix": [0, 5],  "x":5.25,   "y":0},
+                {"label": "K05", "matrix": [0, 6],  "x":6.25,   "y":0},
+                {"label": "K06", "matrix": [0, 7],  "x":7.25,   "y":2.03},
+                {"label": "K07", "matrix": [0, 8],  "x":8.25,   "y":2.03},
+                {"label": "K08", "matrix": [0, 9],  "x":9.25,   "y":2.03},
+                {"label": "K09", "matrix": [0, 10], "x":10.25,  "y":2.03},
+                {"label": "K10", "matrix": [0, 11], "x":11.25,  "y":2.03},
+                {"label": "K11", "matrix": [0, 12], "x":12.25,  "y":2.03},
+                {"label": "K12", "matrix": [1, 1],  "x":0.75,   "y":1,  "w":1.75},
+                {"label": "K13", "matrix": [1, 2],  "x":2.5,    "y":1},
+                {"label": "K14", "matrix": [1, 3],  "x":3.5,    "y":1},
+                {"label": "K15", "matrix": [1, 4],  "x":4.5,    "y":1},
+                {"label": "K16", "matrix": [1, 5],  "x":5.5,    "y":1},
+                {"label": "K17", "matrix": [1, 6],  "x":6.5,    "y":1},
+                {"label": "K18", "matrix": [1, 7],  "x":7.5,    "y":3.03},
+                {"label": "K19", "matrix": [1, 8],  "x":8.5,    "y":3.03},
+                {"label": "K20", "matrix": [1, 9],  "x":9.5,    "y":3.03},
+                {"label": "K21", "matrix": [1, 10], "x":10.5,   "y":3.03},
+                {"label": "K22", "matrix": [1, 11], "x":11.5,   "y":3.03},
+                {"label": "K23", "matrix": [1, 12], "x":12.5,   "y":3.03},
+                {"label": "K24", "matrix": [2, 0],  "x":0.5,    "y":2,  "w":1.5},
+                {"label": "K25", "matrix": [2, 1],  "x":2,      "y":2},
+                {"label": "K26", "matrix": [2, 2],  "x":3,      "y":2},
+                {"label": "K27", "matrix": [2, 3],  "x":4,      "y":2},
+                {"label": "K28", "matrix": [2, 4],  "x":5,      "y":2},
+                {"label": "K29", "matrix": [2, 5],  "x":6,      "y":2},
+                {"label": "K30", "matrix": [2, 6],  "x":7,      "y":2},
+                {"label": "K31", "matrix": [2, 8],  "x":8,      "y":4.03},
+                {"label": "K32", "matrix": [2, 9],  "x":9,      "y":4.03},
+                {"label": "K33", "matrix": [2, 10], "x":10,     "y":4.03},
+                {"label": "K34", "matrix": [2, 11], "x":11,     "y":4.03},
+                {"label": "K35", "matrix": [2, 12], "x":12,     "y":4.03},
+                {"label": "K36", "matrix": [2, 13], "x":13,     "y":4.03},
+                {"label": "K37", "matrix": [3, 1],  "x":1,      "y":3,  "w":1.5},
+                {"label": "K38", "matrix": [3, 3],  "x":4.25,   "y":3,  "w":1.25},
+                {"label": "K39", "matrix": [3, 5],  "x":5.5,    "y":3,  "w":2},
+                {"label": "K40", "matrix": [3, 7],  "x":7.25,   "y":5.03,   "w":2.25},
+                {"label": "K41", "matrix": [3, 9],  "x":9.5,    "y":5.03},
+                {"label": "K42", "matrix": [3, 11], "x":12,     "y":5.03,   "w":1.5}
+            ]
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
